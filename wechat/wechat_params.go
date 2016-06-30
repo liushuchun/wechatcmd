@@ -4,6 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 	"os"
+	"strings"
 )
 
 type GetUUIDParams struct {
@@ -38,12 +39,11 @@ type BaseRequest struct {
 
 	Ret        int    `xml:"ret",json:"-"`
 	Message    string `xml:"message",json:"-"`
-	Skey       string `xml:"skey"`
+	Skey       string `xml:"skey" json:"Skey"`
 	Wxsid      string `xml:"wxsid",json:"Sid"`
 	Wxuin      int    `xml:"wxuin",json:"Uin"`
 	PassTicket string `xml:"pass_ticket",json:"-"`
-
-	DeviceID string `xml:"-"`
+	DeviceID   string `xml:"-" json:"DeviceID"`
 }
 
 type BaseResponse struct {
@@ -64,8 +64,8 @@ type InitResp struct {
 	GrayScale           int     `json:"GrayScale"`
 	InviteStartCount    int     `json:"InviteStartCount"`
 	MPSubscribeMsgCount int     `json:"MPSubscribeMsgCount"`
-	MPSubscribeMsgList  string  `json:"MPSubscribeMsgList"`
-	ClickReportInterval int     `json:"ClickReportInterval"`
+	//MPSubscribeMsgList  string  `json:"MPSubscribeMsgList"`
+	ClickReportInterval int `json:"ClickReportInterval"`
 }
 
 type SyncKey struct {
@@ -79,7 +79,7 @@ type KeyVal struct {
 }
 
 func (r *Response) IsSuccess() bool {
-	return r.BaseResponse.Ret == 0
+	return r.BaseResponse.Ret == StatusSuccess
 }
 
 func (r *Response) Error() error {
@@ -88,7 +88,7 @@ func (r *Response) Error() error {
 
 type User struct {
 	UserName          string `json:"UserName"`
-	Uin               string `json:"Uin"`
+	Uin               int    `json:"Uin"`
 	NickName          string `json:"NickName"`
 	HeadImgUrl        string `json:"HeadImgUrl" xml:""`
 	RemarkName        string `json:"RemarkName" xml:""`
@@ -113,14 +113,69 @@ type MemberResp struct {
 	MemberCount  int
 	ChatRoomName string
 	MemberList   []*Member
+	Seq          int
+}
+
+func (this *Member) IsNormal(mySelf string) bool {
+	return this.VerifyFlag&8 == 0 && // 公众号/服务号
+		!strings.HasPrefix(this.UserName, "@@") && // 群聊
+		this.UserName != mySelf && // 自己
+		!this.IsSpecail() // 特殊账号
+}
+
+func (this *Member) IsSpecail() bool {
+	for i, count := 0, len(SpecialUsers); i < count; i++ {
+		if this.UserName == SpecialUsers[i] {
+			return true
+		}
+	}
+	return false
 }
 
 type Member struct {
-	UserName     string
-	NickName     string
-	RemarkName   string
-	VerifyFlag   int
-	MemberStatus int
+	Uin              int
+	UserName         string
+	NickName         string
+	HeadImgUrl       string
+	ContactFlag      int
+	MemberCount      int
+	MemberList       []User
+	RemarkName       string
+	HideInputBarFlag int
+	Sex              int
+	Signature        string
+	VerifyFlag       int
+	OwnerUin         int
+	PYInitial        string
+	PYQuanPin        string
+	RemarkPYInitial  string
+	RemarkPYQuanPin  string
+	StarFriend       int
+	AppAccountFlag   int
+	Statues          int
+	AttrStatus       int
+	Province         string
+	City             string
+	Alias            string
+	SnsFlag          int
+	UniFriend        int
+	DisplayName      string
+	ChatRoomId       int
+	KeyWord          string
+	EncryChatRoomId  string
+}
+
+type NotifyParams struct {
+	BaseRequest  *BaseRequest
+	Code         int
+	FromUserName string
+	ToUserName   string
+	ClientMsgId  int
+}
+
+type NotifyResp struct {
+	Response
+	MsgID string
 }
 
 func NewGetUUIDParams(appid, fun, lang string, times float64) *GetUUIDParams {

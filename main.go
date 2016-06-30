@@ -14,7 +14,7 @@ var (
 
 func main() {
 	flag.Parse()
-	logger := log.New(os.Stdout, "[robot]", log.LstdFlags)
+	logger := log.New(os.Stdout, "[**AI**]:", log.LstdFlags)
 
 	logger.Println("天启元年")
 	wechat := wechat.NewWechat(logger)
@@ -31,5 +31,20 @@ func main() {
 	}
 
 	wechat.Log.Println("成功")
+
+	wechat.Log.Println("微信初始化成功...")
+
+	wechat.Log.Println("开启状态栏通知...")
+	if err := wechat.StatusNotify(); err != nil {
+
+		return
+	}
+	if err := wechat.GetContacts(); err != nil {
+		wechat.Log.Fatalf("拉取联系人失败%v\n", err)
+		return
+	}
+	for _, member := range wechat.MemberList {
+		wechat.Log.Printf("用户名:%s 用户别名:%s 性别 ", member.UserName, member.NickName, member.Sex)
+	}
 
 }

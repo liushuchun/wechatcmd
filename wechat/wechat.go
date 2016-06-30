@@ -44,7 +44,7 @@ var (
 )
 
 type Wechat struct {
-	MySelf          string
+	User            User
 	Root            string
 	Debug           bool
 	Uuid            string
@@ -59,16 +59,17 @@ type Wechat struct {
 	LowSyncKey      string
 	SyncKeys        []string
 	Users           []string
-	MemberList      []string //
-	ContactList     []string //好友
-	GroupList       []string //群
-	GroupMemberList []string //群友
-	PublicUserList  []string //公众号
-	SpecialUserList []string //特殊账号
-	AutoReplyMode   bool     //default false
+	MemberList      []*Member //
+	ContactList     []User    //好友
+	GroupList       []string  //群
+	GroupMemberList []string  //群友
+	PublicUserList  []User    //公众号
+	SpecialUserList []User    //特殊账号
+	AutoReplyMode   bool      //default false
 	AutoOpen        bool
 	SyncHost        string
 	Interactive     bool
+	TotalMember     int
 	TimeOut         int // 同步时间间隔   default:20
 	MediaCount      int // -1
 	SaveFolder      string
@@ -163,7 +164,7 @@ func (w *Wechat) waitToLogin(uuid string, tip int) (redirectUri, code string, rt
 	case "200":
 		reRedirect := regexp.MustCompile(`window.redirect_uri="(\S+?)"`)
 		pmSub := reRedirect.FindStringSubmatch(string(data))
-		w.Log.Printf("the login data %v  the pmSub is %#v", string(data), pmSub)
+
 		if len(pmSub) != 0 {
 			redirectUri = pmSub[1]
 		} else {
@@ -273,66 +274,10 @@ func (w *Wechat) Login() (err error) {
 	w.BaseUri = w.RedirectedUri[:index]
 
 	apiUri := fmt.Sprintf("%s/%s?pass_ticket=%s&skey=%s&r=%d", w.BaseUri, name, w.Request.PassTicket, w.Request.Skey, int(time.Now().Unix()))
-	w.Log.Printf("the apiurl:%s,name:%s,data:%v,resp:%v\n", apiUri, name, w.Request, newResp)
-	if err = w.Send(apiUri, name, bytes.NewReader(data), newResp); err != nil {
+	if err = w.Send(apiUri, bytes.NewReader(data), newResp); err != nil {
 		return
 	}
-	w.MySelf = newResp.User.UserName
-
+	w.User = newResp.User
+	w.Log.Printf("the response:%+v\n", newResp)
 	return
-}
-
-func (w *Wechat) Post(url string, data url.Values, jsonFmt bool) (result string) {
-	//req.Header.Set("User-agent", UserAgent)
-
-	resp, err := w.Client.PostForm(url, data)
-
-	//req.Header.Set("ContentType", "application/json; charset=UTF-8")
-
-	fmt.Printf("resp%#v", resp)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return
-	}
-
-	result = string(respBody)
-	return
-}
-
-func (w *Wechat) Send(apiUri, name string, body io.Reader, call Caller) (err error) {
-	method := "GET"
-	if body != nil {
-		method = "POST"
-	}
-
-	req, err := http.NewRequest(method, apiUri, body)
-	if err != nil {
-		return
-	}
-
-	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-	resp, err := w.Client.Do(req)
-	if err != nil {
-		return
-	}
-	defer resp.Body.Close()
-	reader := resp.Body.(io.Reader)
-
-	if err = json.NewDecoder(reader).Decode(call); err != nil {
-		return
-	}
-	fmt.Printf("the %#v", call)
-	if !call.IsSuccess() {
-		return call.Error()
-	}
-	return
-}
-
-func (w *Wechat) SetCookies() {
-	//w.Client.Jar.SetCookies(u, cookies)
-
 }
