@@ -2,9 +2,12 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"os"
 
+	ct "github.com/daviddengcn/go-colortext"
+	ui "github.com/gizak/termui"
 	"github.com/liushuchun/wechatcmd/wechat"
 )
 
@@ -13,6 +16,7 @@ var (
 )
 
 func main() {
+	ct.Foreground(ct.Yellow, true)
 	flag.Parse()
 	logger := log.New(os.Stdout, "[**AI**]:", log.LstdFlags)
 
@@ -43,8 +47,46 @@ func main() {
 		wechat.Log.Fatalf("拉取联系人失败%v\n", err)
 		return
 	}
-	for _, member := range wechat.MemberList {
-		wechat.Log.Printf("用户名:%s 用户别名:%s 性别 ", member.UserName, member.NickName, member.Sex)
+	itemList := []string{}
+
+	for index, member := range wechat.MemberList {
+		item := fmt.Sprintf("[%d] %s  ", index, member.NickName)
+		itemList = append(itemList, item)
+
 	}
 
+	err := ui.Init()
+	if err != nil {
+		panic(err)
+	}
+
+	defer ui.Close()
+	p := ui.NewPar("欢迎进入微信聊天")
+	p.Height = 3
+	p.Width = 100
+	p.TextFgColor = ui.ColorGreen
+	ui.Render(p)
+	p.BorderLabel = "welcome"
+	p.BorderFg = ui.ColorCyan
+
+	listNum := (len(itemList)-1)/50 + 1
+	for i := 0; i < listNum-1; i++ {
+		list := ui.NewList()
+		list.Items = itemList[i*50 : i*50+50]
+		list.ItemFgColor = ui.ColorYellow
+		list.BorderRight = false
+		list.Height = 200
+		list.Width = 20
+		list.X = i * 20
+		list.Y = 3
+		ui.Render(list)
+	}
+
+	ui.Handle("/sys/kbd/q", func(e ui.Event) {
+		ui.StopLoop()
+	})
+	ui.Handle("/sys/kbd", func(e ui.Event) {
+		ui.Close()
+	})
+	ui.Loop()
 }
