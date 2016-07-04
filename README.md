@@ -16,7 +16,7 @@
 ### 键盘快捷键
 
 <table>
-	
+
 
 </table>
 
@@ -34,8 +34,8 @@
 
 
 ### 现在实现的界面：
-![界面图](http://7xrjfe.com1.z0.glb.clouddn.com/1.png)
-![登陆后图](http://7xrjfe.com1.z0.glb.clouddn.com/wechat2.png) 
+![界面图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-1.png)
+![登陆后图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-2.png)
 
 
 
@@ -44,7 +44,7 @@
 	$ wechatcmd
 
 ### 现在完成的功能
-- [x] 实现微信登陆 
+- [x] 实现微信登陆
 - [x] 实现微信认证
 - [x] 实现拉取用户信息
 - [x] 同步消息
