@@ -11,10 +11,6 @@ import (
 	"github.com/liushuchun/wechatcmd/wechat"
 )
 
-var (
-	DebugMode = flag.Bool("debug", false, "是否为 debug 模式")
-)
-
 func main() {
 	ct.Foreground(ct.Yellow, true)
 	flag.Parse()
@@ -30,7 +26,7 @@ func main() {
 
 	wechat.Log.Printf("登陆...")
 	if err := wechat.Login(); err != nil {
-		wechat.Log.Println("登陆失败：%v\n", err)
+		wechat.Log.Printf("登陆失败：%v\n", err)
 		return
 	}
 

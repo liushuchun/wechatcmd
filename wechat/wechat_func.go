@@ -14,8 +14,8 @@ import (
 func (w *Wechat) GetContacts() (err error) {
 
 	name, resp := "webwxgetcontact", new(MemberResp)
-	apiUri := fmt.Sprintf("%s/%s?pass_ticket=%s&skey=%s&r=%s", w.BaseUri, name, w.Request.PassTicket, w.Request.Skey, w.GetUnixTime())
-	if err := w.Send(apiUri, nil, resp); err != nil {
+	apiURI := fmt.Sprintf("%s/%s?pass_ticket=%s&skey=%s&r=%s", w.BaseUri, name, w.Request.PassTicket, w.Request.Skey, w.GetUnixTime())
+	if err := w.Send(apiURI, nil, resp); err != nil {
 		return err
 	}
 	w.MemberList, w.TotalMember = make([]*Member, 0, resp.MemberCount/5*2), resp.MemberCount
@@ -28,7 +28,7 @@ func (w *Wechat) GetContacts() (err error) {
 }
 
 func (w *Wechat) StatusNotify() (err error) {
-	statusUrl := w.BaseUri + fmt.Sprintf("/webwxstatusnotify?lang=zh_CN&pass_ticket=%s", w.Request.PassTicket)
+	statusURL := w.BaseUri + fmt.Sprintf("/webwxstatusnotify?lang=zh_CN&pass_ticket=%s", w.Request.PassTicket)
 	resp := new(NotifyResp)
 	data, err := json.Marshal(NotifyParams{
 		BaseRequest:  w.Request,
@@ -38,15 +38,36 @@ func (w *Wechat) StatusNotify() (err error) {
 		ClientMsgId:  w.GetUnixTime(),
 	})
 
-	if err := w.Send(statusUrl, bytes.NewReader(data), resp); err != nil {
+	if err := w.Send(statusURL, bytes.NewReader(data), resp); err != nil {
 		return err
 	}
 
 	return
 }
 
-func (w *Wechat) SendMsg(name, word string, isFile bool) (err error) {
+func (w *Wechat) GetContactsInBatch() (err error) {
+	resp := new(MemberResp)
+	apiUrl := fmt.Sprintf("https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.GetUnixTime(), w.Request.PassTicket)
+	if err := w.Send(apiUrl, body, resp); err != nil {
+		return err
+	}
+}
 
+func (w *Wechat) TestCheck() (err error) {
+	/*for _, host := range Hosts {
+		w.SyncHost = host
+
+	}*/
+	return
+}
+
+func (w *Wechat) SyncCheck() (err error) {
+	//checkUrl:=fmt.Sprintf("https://%s/cgi-bin/mmwebwx-bin/synccheck?sid=%s&uin=%s&skey=%s&deviceid=%s&synckey=%s&_=%s"+, w.SyncHost,w.Sid,w.Uin,w.Skey,w.DeviceId,w.SyncKeys[0])
+	return
+}
+
+func (w *Wechat) SendMsg(name, word string, isFile bool) (err error) {
+	urlApi := fmt.Printf("very good feel")
 	return
 }
 
@@ -90,13 +111,13 @@ func (w *Wechat) Post(url string, data url.Values, jsonFmt bool) (result string)
 	return
 }
 
-func (w *Wechat) Send(apiUri string, body io.Reader, call Caller) (err error) {
+func (w *Wechat) Send(apiURI string, body io.Reader, call Caller) (err error) {
 	method := "GET"
 	if body != nil {
 		method = "POST"
 	}
 
-	req, err := http.NewRequest(method, apiUri, body)
+	req, err := http.NewRequest(method, apiURI, body)
 	if err != nil {
 		return
 	}

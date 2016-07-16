@@ -57,7 +57,8 @@ type Wechat struct {
 	DeviceId        string
 	BaseRequest     map[string]string
 	LowSyncKey      string
-	SyncKeys        []string
+	SyncKeyStr      string
+	SyncKeys        []KeyVal
 	Users           []string
 	MemberList      []*Member //
 	ContactList     []User    //好友
@@ -214,6 +215,10 @@ func (w *Wechat) GetQR() (err error) {
 
 }
 
+func (w *Wechat) SetSynKey() {
+	
+}
+
 func (w *Wechat) GetUUID() (err error) {
 	params := url.Values{}
 	params.Set("appid", AppId)
@@ -277,7 +282,21 @@ func (w *Wechat) Login() (err error) {
 	if err = w.Send(apiUri, bytes.NewReader(data), newResp); err != nil {
 		return
 	}
+	w.Log.Printf("the newResp:%#v", newResp)
 	w.User = newResp.User
+	w.SyncKeys = newResp.SyncKey.List
+	w.SyncKeyStr = ""
+	for i, item := range w.SyncKeys {
+
+		if i == 0 {
+			w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
+			continue
+		}
+
+		w.SyncKeyStr += "|" + strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
+
+	}
 	w.Log.Printf("the response:%+v\n", newResp)
+	w.Log.Printf("the sync key is %s\n", w.SyncKeyStr)
 	return
 }

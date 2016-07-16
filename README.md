@@ -34,8 +34,8 @@
 
 
 ### 现在实现的界面：
-![界面图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-1.png)
-![登陆后图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-2.png)
+![界面图](https://github.com/liushuchun/wechatcmd/blob/master/img/wechatcmd-1.png)
+![登陆后图](https://github.com/liushuchun/wechatcmd/blob/master/img/wechatcmd-2.png)
 
 
 
@@ -48,6 +48,7 @@
 - [x] 实现微信认证
 - [x] 实现拉取用户信息
 - [x] 同步消息
+- [ ] 设置自动回复：真在忙，已离开.
 - [ ] 自动更新消息
 - [ ] 自动回复消息
 - [ ] 获取其他消息
