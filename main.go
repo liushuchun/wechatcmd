@@ -51,6 +51,7 @@ func main() {
 		itemList = append(itemList, item)
 
 	}
+
 	fmt.Println(itemList)
 	err := ui.Init()
 	if err != nil {
