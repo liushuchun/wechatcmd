@@ -34,8 +34,8 @@
 
 
 ### 现在实现的界面：
-![界面图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-1.png)
-![登陆后图](http://o97zlegvp.bkt.clouddn.com/wechatcmd-2.png)
+![界面图](https://raw.githubusercontent.com/)
+![登陆后图](https://raw.githubusercontent.com/)
 
 
 
