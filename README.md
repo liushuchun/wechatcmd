@@ -34,8 +34,9 @@
 
 
 ### 现在实现的界面：
-![界面图](https://github.com/liushuchun/wechatcmd/blob/master/img/wechatcmd-1.png)
-![登陆后图](https://github.com/liushuchun/wechatcmd/blob/master/img/wechatcmd-2.png)
+
+![界面图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-1.png)
+![登陆后图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-2.png)
 
 
 

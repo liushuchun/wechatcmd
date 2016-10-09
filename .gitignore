@@ -2,7 +2,6 @@
 *.a
 *.so
 *.py
-wechatcmd
 # Folders
 _obj
 _test

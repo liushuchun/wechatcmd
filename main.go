@@ -65,11 +65,14 @@ func main() {
 	ui.Render(p)
 	p.BorderLabel = "welcome"
 	p.BorderFg = ui.ColorCyan
-
+	offset := 50
 	listNum := (len(itemList)-1)/50 + 1
-	for i := 0; i < listNum-1; i++ {
+	for i := 0; i <= listNum-1; i++ {
 		list := ui.NewList()
-		list.Items = itemList[i*50 : i*50+50]
+		if listNum == 1 {
+			offset = len(itemList) % 50
+		}
+		list.Items = itemList[i*50 : i*50+offset]
 		list.ItemFgColor = ui.ColorYellow
 		list.BorderRight = false
 		list.Height = 200
