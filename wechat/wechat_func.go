@@ -48,9 +48,10 @@ func (w *Wechat) StatusNotify() (err error) {
 func (w *Wechat) GetContactsInBatch() (err error) {
 	resp := new(MemberResp)
 	apiUrl := fmt.Sprintf("https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.GetUnixTime(), w.Request.PassTicket)
-	if err := w.Send(apiUrl, body, resp); err != nil {
+	if err := w.Send(apiUrl, nil, resp); err != nil {
 		return err
 	}
+	return
 }
 
 func (w *Wechat) TestCheck() (err error) {
@@ -67,7 +68,7 @@ func (w *Wechat) SyncCheck() (err error) {
 }
 
 func (w *Wechat) SendMsg(name, word string, isFile bool) (err error) {
-	urlApi := fmt.Printf("very good feel")
+
 	return
 }
 

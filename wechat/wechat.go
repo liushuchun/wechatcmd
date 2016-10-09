@@ -60,6 +60,7 @@ type Wechat struct {
 	SyncKeyStr      string
 	SyncKeys        []KeyVal
 	Users           []string
+	InitContactList []User    //谈话的人
 	MemberList      []*Member //
 	ContactList     []User    //好友
 	GroupList       []string  //群
@@ -216,7 +217,7 @@ func (w *Wechat) GetQR() (err error) {
 }
 
 func (w *Wechat) SetSynKey() {
-	
+
 }
 
 func (w *Wechat) GetUUID() (err error) {
@@ -283,6 +284,9 @@ func (w *Wechat) Login() (err error) {
 		return
 	}
 	w.Log.Printf("the newResp:%#v", newResp)
+	for _, contact := range newResp.ContactList {
+		w.InitContactList = append(w.InitContactList, contact)
+	}
 	w.User = newResp.User
 	w.SyncKeys = newResp.SyncKey.List
 	w.SyncKeyStr = ""

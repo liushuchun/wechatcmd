@@ -1,25 +1,8 @@
-Skip to content
-This repository
-Search
-Pull requests
-Issues
-Gist
- @liushuchun
- Unwatch 1
-  Star 0
- Fork 0 liushuchun/test
- Code  Issues 0  Pull requests 0  Wiki  Pulse  Graphs  Settings
-Branch: master Find file Copy pathtest/.gitignore
-61554c3  just now
-@liushuchun liushuchun Initial commit
-1 contributor
-RawBlameHistory     25 lines (19 sloc)  266 Bytes
-# Compiled Object files, Static and Dynamic libs (Shared Objects)
 *.o
 *.a
 *.so
 *.py
-
+wechatcmd
 # Folders
 _obj
 _test

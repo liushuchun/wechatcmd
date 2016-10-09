@@ -16,7 +16,7 @@ func main() {
 	flag.Parse()
 	logger := log.New(os.Stdout, "[**AI**]:", log.LstdFlags)
 
-	logger.Println("天启元年")
+	logger.Println("启动...")
 	wechat := wechat.NewWechat(logger)
 
 	if err := wechat.WaitForLogin(); err != nil {
@@ -43,14 +43,15 @@ func main() {
 		wechat.Log.Fatalf("拉取联系人失败%v\n", err)
 		return
 	}
-	itemList := []string{}
 
-	for index, member := range wechat.MemberList {
+	itemList := []string{}
+	wechat.Log.Printf("the initcontact:%+v", wechat.InitContactList)
+	for index, member := range wechat.InitContactList {
 		item := fmt.Sprintf("[%d] %s  ", index, member.NickName)
 		itemList = append(itemList, item)
 
 	}
-
+	fmt.Println(itemList)
 	err := ui.Init()
 	if err != nil {
 		panic(err)
