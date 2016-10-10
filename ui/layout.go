@@ -135,6 +135,9 @@ func (l *Layout) Init() {
 		resetPar(l.editBox)
 
 	})
+	ui.Handle("/sys/kbd/C-n", func(ui.Event) {
+		l.NextUser()
+	})
 	ui.Handle("/sys/kbd/<space>", func(ui.Event) {
 		appendToPar(l.editBox, " ")
 	})
@@ -169,8 +172,12 @@ func (l *Layout) displayMsgIn() {
 }
 
 func (l *Layout) NextUser() {
-	if l.userCur+1 >= l.pageSize { //跳出了对应的下标
+	if l.userCur+1 >= l.pageSize || l.userCur+1 >= len(l.showUserList) { //跳出了对应的下标
+		l.userListBox.Items[l.userCur] = DelBgColor(l.userListBox.Items[l.userCur])
+
 		l.userCur = 0
+		l.userListBox.Items[l.userCur] = AddBgColor(l.userListBox.Items[l.userCur])
+
 		if l.curPage+1 >= l.pageCount { //当前页是最后一页了
 			l.curPage = 0
 		} else {
@@ -205,7 +212,7 @@ func AddBgColor(msg string) string {
 	return "[" + msg + "*]" + CurMark
 }
 func DelBgColor(msg string) string {
-	return msg[1 : len(msg)-11]
+	return msg[1 : len(msg)-10]
 }
 
 func appendToPar(p *ui.Par, k string) {
