@@ -13,6 +13,14 @@ type Config struct {
 	ReplyMsgs []string `json:"reply_msgs"`
 }
 
+type Message struct {
+	FromUser  string `json:"from_user"`
+	ToUser    string `json:"to_user"`
+	Group     string `json:"group"`
+	Content   string `json:"content"`
+	Timestamp string `json:"time"`
+}
+
 type GetUUIDParams struct {
 	AppId    string  `json:"appid"`
 	Fun      string  `json:"fun"`

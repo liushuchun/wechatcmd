@@ -2,7 +2,7 @@ package box
 
 import (
 	ui "github.com/gizak/termui"
-	"github.com/sebgl/chatbox/chat"
+	"github.com/wechatcmd/wechat"
 )
 
 type Layout struct {
@@ -10,11 +10,11 @@ type Layout struct {
 	inputBox        *ui.Par
 	currentMsgCount int
 	maxMsgCount     int
-	msgIn           chan chat.Message
+	msgIn           chan wechat.Message
 	textOut         chan string
 }
 
-func NewLayout(msgIn chan chat.Message, textOut chan string) *Layout {
+func NewLayout(msgIn chan wechat.Message, textOut chan string) *Layout {
 	msgInBox := ui.NewPar("")
 	msgInBox.Height = 20
 	msgInBox.TextFgColor = ui.ColorWhite
