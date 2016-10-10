@@ -25,12 +25,12 @@
 
 ### Mac安装
 
-	$ go get -u github.com/liushuchun/wechat
+	$ go get -u github.com/liushuchun/wechatcmd
 
 
 ### Linux安装
 
-	$ go get -u github.com/liushuchun/wechat
+	$ go get -u github.com/liushuchun/wechatcmd
 
 
 ### 现在实现的界面：
