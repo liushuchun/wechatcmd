@@ -6,6 +6,7 @@
 _obj
 _test
 wechatcmd
+/ui/ui
 
 # Architecture specific extensions/prefixes
 *.[568vq]
