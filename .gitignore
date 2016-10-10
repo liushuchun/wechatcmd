@@ -5,6 +5,7 @@
 # Folders
 _obj
 _test
+wechatcmd
 
 # Architecture specific extensions/prefixes
 *.[568vq]

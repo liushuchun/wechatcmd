@@ -52,7 +52,6 @@ func main() {
 
 	}
 
-	fmt.Println(itemList)
 	err := ui.Init()
 	if err != nil {
 		panic(err)
@@ -89,5 +88,6 @@ func main() {
 	ui.Handle("/sys/kbd", func(e ui.Event) {
 		ui.Close()
 	})
+
 	ui.Loop()
 }

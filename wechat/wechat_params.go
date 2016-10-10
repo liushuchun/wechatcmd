@@ -7,6 +7,12 @@ import (
 	"strings"
 )
 
+type Config struct {
+	AutoReply bool     `json:"auto_reply"`
+	AutoSave  bool     `json:"auto_save"`
+	ReplyMsgs []string `json:"reply_msgs"`
+}
+
 type GetUUIDParams struct {
 	AppId    string  `json:"appid"`
 	Fun      string  `json:"fun"`

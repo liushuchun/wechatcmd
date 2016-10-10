@@ -92,6 +92,10 @@ func (w *Wechat) CreateRoom(name string) (err error) {
 	return
 }
 
+func (w *Wechat) PullMsg() {
+	return
+}
+
 func (w *Wechat) Post(url string, data url.Values, jsonFmt bool) (result string) {
 	//req.Header.Set("User-agent", UserAgent)
 
