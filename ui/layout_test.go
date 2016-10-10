@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	"flag"
@@ -6,7 +6,7 @@ import (
 	"github.com/liushuchun/wechatcmd/wechat"
 )
 
-func main() {
+func Test_UI() {
 	flag.Parse()
 	maxChanSize := 10000
 

@@ -1,4 +1,4 @@
-package main
+package ui
 
 import (
 	ui "github.com/gizak/termui"
@@ -154,6 +154,7 @@ func (l *Layout) Init() {
 	})
 
 	go l.displayMsgIn()
+
 	// 注册各个组件
 	ui.Render(l.msgInBox, l.chatBox, l.editBox, l.userListBox)
 	ui.Loop()

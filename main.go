@@ -2,22 +2,24 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 
 	ct "github.com/daviddengcn/go-colortext"
-	ui "github.com/gizak/termui"
-	"github.com/liushuchun/wechatcmd/wechat"
+	"github.com/liushuchun/wechatcmd/ui"
+	chat "github.com/liushuchun/wechatcmd/wechat"
 )
 
 func main() {
+	const (
+		maxChanSize = 50
+	)
 	ct.Foreground(ct.Yellow, true)
 	flag.Parse()
 	logger := log.New(os.Stdout, "[**AI**]:", log.LstdFlags)
 
 	logger.Println("启动...")
-	wechat := wechat.NewWechat(logger)
+	wechat := chat.NewWechat(logger)
 
 	if err := wechat.WaitForLogin(); err != nil {
 		wechat.Log.Fatalf("等待失败：%s\n", err.Error())
@@ -46,48 +48,18 @@ func main() {
 
 	itemList := []string{}
 	wechat.Log.Printf("the initcontact:%+v", wechat.InitContactList)
-	for index, member := range wechat.InitContactList {
-		item := fmt.Sprintf("[%d] %s  ", index, member.NickName)
-		itemList = append(itemList, item)
-
+	for _, member := range wechat.InitContactList {
+		itemList = append(itemList, member.NickName)
+	}
+	userList := []string{}
+	for _, member := range wechat.PublicUserList {
+		userList = append(userList, member.NickName)
 	}
 
-	err := ui.Init()
-	if err != nil {
-		panic(err)
-	}
+	msgIn := make(chan chat.Message, maxChanSize)
+	textOut := make(chan string, maxChanSize)
+	chatIn := make(chan chat.Message, maxChanSize)
 
-	defer ui.Close()
-	p := ui.NewPar("欢迎进入微信聊天")
-	p.Height = 3
-	p.Width = 100
-	p.TextFgColor = ui.ColorGreen
-	ui.Render(p)
-	p.BorderLabel = "用户框"
-	p.BorderFg = ui.ColorCyan
-	offset := 50
-	listNum := (len(itemList)-1)/50 + 1
-	for i := 0; i <= listNum-1; i++ {
-		list := ui.NewList()
-		if listNum == 1 {
-			offset = len(itemList) % 50
-		}
-		list.Items = itemList[i*50 : i*50+offset]
-		list.ItemFgColor = ui.ColorYellow
-		list.BorderRight = false
-		list.Height = 200
-		list.Width = 20
-		list.X = i * 20
-		list.Y = 3
-		ui.Render(list)
-	}
-
-	ui.Handle("/sys/kbd/q", func(e ui.Event) {
-		ui.StopLoop()
-	})
-	ui.Handle("/sys/kbd", func(e ui.Event) {
-		ui.Close()
-	})
-
-	ui.Loop()
+	layout := ui.NewLayout(itemList, userList, chatIn, msgIn, textOut)
+	layout.Init()
 }
