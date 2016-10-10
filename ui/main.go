@@ -13,7 +13,7 @@ func main() {
 	//log.SetLevel(log.DebugLevel)
 	msgIn := make(chan wechat.Message, maxChanSize)
 	textOut := make(chan string, maxChanSize)
-	initList := []string{"test1", "test2", "test4"}
+	initList := []string{"普罗米修斯", "啊琉球私", "盗火者", "拉风小丸子", "自强不吸"}
 	userList := initList
 	chatIn := make(chan wechat.Message, maxChanSize)
 

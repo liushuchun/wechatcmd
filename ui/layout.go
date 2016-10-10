@@ -1,14 +1,12 @@
 package main
 
 import (
-	"strings"
-
 	ui "github.com/gizak/termui"
 	"github.com/liushuchun/wechatcmd/wechat"
 )
 
 const (
-	CurMark  = "*(bg-green)"
+	CurMark  = "(bg-red)"
 	PageSize = 50
 )
 
@@ -43,23 +41,21 @@ func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Messag
 	}
 	showUserList := userList[0:offset]
 
-	showUserList[0] = showUserList[0] + CurMark
+	showUserList[0] = AddBgColor(showUserList[0])
 
 	userListBox := ui.NewList()
 	userListBox.BorderLabel = "用户列表"
 	userListBox.BorderFg = ui.ColorMagenta
 	userListBox.X = 0
 	userListBox.Y = 0
-	userListBox.Height = 100
-	userListBox.Width = 20
+
 	userListBox.Items = showUserList
 	userListBox.ItemFgColor = ui.ColorGreen
 
 	chatBox := ui.NewPar("")
 	chatBox.X = 20
 	chatBox.Y = 0
-	chatBox.Height = 80
-	chatBox.Width = 40
+
 	chatBox.TextFgColor = ui.ColorRed
 	chatBox.BorderLabel = "to:" + userList[0]
 	chatBox.BorderFg = ui.ColorMagenta
@@ -67,8 +63,7 @@ func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Messag
 	msgInBox := ui.NewPar("")
 	msgInBox.X = 60
 	msgInBox.Y = 0
-	msgInBox.Height = 80
-	msgInBox.Width = 40
+
 	msgInBox.TextFgColor = ui.ColorWhite
 	msgInBox.BorderLabel = "消息窗"
 	msgInBox.BorderFg = ui.ColorCyan
@@ -77,8 +72,7 @@ func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Messag
 	editBox := ui.NewPar("")
 	editBox.X = 20
 	editBox.Y = 80
-	editBox.Height = 20
-	editBox.Width = 80
+
 	editBox.TextFgColor = ui.ColorWhite
 	editBox.BorderLabel = "输入框"
 	editBox.BorderFg = ui.ColorCyan
@@ -116,7 +110,7 @@ func (l *Layout) Init() {
 	height := ui.TermHeight()
 	width := ui.TermWidth()
 	l.userListBox.SetWidth(width * 2 / 10)
-
+	l.userListBox.Height = height
 	l.msgInBox.SetWidth(width * 4 / 10)
 	l.msgInBox.SetX(width * 6 / 10)
 	l.msgInBox.Height = height * 8 / 10
@@ -137,7 +131,7 @@ func (l *Layout) Init() {
 		ui.StopLoop()
 	})
 	ui.Handle("/sys/kbd/<enter>", func(ui.Event) {
-		appendToPar(l.msgInBox, l.editBox.Text)
+		appendToPar(l.msgInBox, l.editBox.Text+"\n")
 		resetPar(l.editBox)
 
 	})
@@ -192,9 +186,9 @@ func (l *Layout) NextUser() {
 		l.showUserList[0] = l.showUserList[0] + CurMark
 		l.userListBox.Items = l.showUserList
 	} else {
-		l.userListBox.Items[l.userCur] = strings.TrimRight(l.userListBox.Items[l.userCur], CurMark)
+		l.userListBox.Items[l.userCur] = DelBgColor(l.userListBox.Items[l.userCur])
 		l.userCur++
-		l.userListBox.Items[l.userCur] += CurMark
+		l.userListBox.Items[l.userCur] = AddBgColor(l.userListBox.Items[l.userCur])
 	}
 
 	ui.Render(l.userListBox)
@@ -205,6 +199,13 @@ func (l *Layout) SendText(text string) {
 	appendToPar(l.msgInBox, text)
 
 	l.textOut <- text
+}
+
+func AddBgColor(msg string) string {
+	return "[" + msg + "*]" + CurMark
+}
+func DelBgColor(msg string) string {
+	return msg[1 : len(msg)-11]
 }
 
 func appendToPar(p *ui.Par, k string) {
