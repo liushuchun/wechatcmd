@@ -63,7 +63,7 @@ func main() {
 	p.Width = 100
 	p.TextFgColor = ui.ColorGreen
 	ui.Render(p)
-	p.BorderLabel = "welcome"
+	p.BorderLabel = "用户框"
 	p.BorderFg = ui.ColorCyan
 	offset := 50
 	listNum := (len(itemList)-1)/50 + 1
