@@ -6,15 +6,28 @@ import (
 )
 
 type Layout struct {
+	chatBox         *ui.Par
 	msgInBox        *ui.Par
 	inputBox        *ui.Par
+	UserList        *ui.List
 	currentMsgCount int
 	maxMsgCount     int
-	msgIn           chan wechat.Message
-	textOut         chan string
+	userIn          chan []string
+
+	msgIn   chan wechat.Message
+	textOut chan string
 }
 
-func NewLayout(msgIn chan wechat.Message, textOut chan string) *Layout {
+func NewLayout(userList []string, msgIn chan wechat.Message, textOut chan string) *Layout {
+	userList := ui.NewList()
+	userList.X = 0
+	userList.Y = 0
+	userList.Height = 100
+	userList.Width = 20
+	userList.Items = userList
+
+	userList.ItemFgColor = ui.ColorGreen
+
 	msgInBox := ui.NewPar("")
 	msgInBox.Height = 20
 	msgInBox.TextFgColor = ui.ColorWhite

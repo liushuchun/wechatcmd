@@ -1,0 +1,49 @@
+{
+	"comment": "",
+	"ignore": "test",
+	"package": [
+		{
+			"checksumSHA1": "awH0udAyzV8zYKBShHEfpHyM9fI=",
+			"path": "github.com/daviddengcn/go-colortext",
+			"revision": "511bcaf42ccd42c38aba7427b6673277bf19e2a1",
+			"revisionTime": "2016-05-07T01:00:35Z"
+		},
+		{
+			"checksumSHA1": "hsu4NFmecJxyzYCz8pOZyHqggGM=",
+			"path": "github.com/gizak/termui",
+			"revision": "6a96276a036b97e1de2ee191e8ca041c5e779099",
+			"revisionTime": "2016-04-07T01:41:23Z"
+		},
+		{
+			"checksumSHA1": "DdH3xAkzAWJ4B/LGYJyCeRsly2I=",
+			"path": "github.com/mattn/go-runewidth",
+			"revision": "d6bea18f789704b5f83375793155289da36a3c7f",
+			"revisionTime": "2016-03-15T04:07:12Z"
+		},
+		{
+			"checksumSHA1": "D180A3oNyC2jA3vxLa5id4SYMJg=",
+			"path": "github.com/michaeldv/termbox-go",
+			"revision": "675ffd907b7401b8a709a5ef2249978af5616bb2",
+			"revisionTime": "2015-06-18T03:38:20Z"
+		},
+		{
+			"checksumSHA1": "L3leymg2RT8hFl5uL+5KP/LpBkg=",
+			"path": "github.com/mitchellh/go-wordwrap",
+			"revision": "ad45545899c7b13c020ea92b2072220eefad42b8",
+			"revisionTime": "2015-03-14T17:03:34Z"
+		},
+		{
+			"checksumSHA1": "bcgbmZhNRsfsLgd8obtn7yIey6I=",
+			"path": "github.com/nsf/termbox-go",
+			"revision": "e8f6d27f72a2f2bb598eb3579afd5ea364ef67f7",
+			"revisionTime": "2016-08-08T04:50:38Z"
+		},
+		{
+			"checksumSHA1": "h/HMhokbQHTdLUbruoBBTee+NYw=",
+			"path": "github.com/skratchdot/open-golang/open",
+			"revision": "75fb7ed4208cf72d323d7d02fd1a5964a7a9073c",
+			"revisionTime": "2016-03-02T14:40:31Z"
+		}
+	],
+	"rootPath": "github.com/liushuchun/wechatcmd"
+}
