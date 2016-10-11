@@ -58,6 +58,7 @@ type Wechat struct {
 	BaseRequest     map[string]string
 	LowSyncKey      string
 	SyncKeyStr      string
+	SyncHost        string
 	SyncKeys        []KeyVal
 	Users           []string
 	InitContactList []User    //谈话的人
@@ -69,7 +70,6 @@ type Wechat struct {
 	SpecialUserList []User    //特殊账号
 	AutoReplyMode   bool      //default false
 	AutoOpen        bool
-	SyncHost        string
 	Interactive     bool
 	TotalMember     int
 	TimeOut         int // 同步时间间隔   default:20

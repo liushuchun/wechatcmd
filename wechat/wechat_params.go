@@ -55,7 +55,7 @@ type GetUUIDParams struct {
 	AppId    string  `json:"appid"`
 	Fun      string  `json:"fun"`
 	Lang     string  `json:"lang"`
-	UnixTime float64 `json:"_"`
+	UnixTime float64 `json:"-"`
 }
 
 type Response struct {
@@ -79,15 +79,14 @@ type Caller interface {
 }
 
 type BaseRequest struct {
-	XMLName xml.Name `xml:"error",json:"-"`
-
-	Ret        int    `xml:"ret",json:"-"`
-	Message    string `xml:"message",json:"-"`
-	Skey       string `xml:"skey" json:"Skey"`
-	Wxsid      string `xml:"wxsid",json:"Sid"`
-	Wxuin      int    `xml:"wxuin",json:"Uin"`
-	PassTicket string `xml:"pass_ticket",json:"-"`
-	DeviceID   string `xml:"-" json:"DeviceID"`
+	XMLName    xml.Name `xml:"error" json:"-"`
+	Ret        int      `xml:"ret" json:"-"`
+	Message    string   `xml:"message" json:"-"`
+	Skey       string   `xml:"skey" json:"Skey"`
+	Wxsid      string   `xml:"wxsid" json:"Sid"`
+	Wxuin      int      `xml:"wxuin" json:"Uin"`
+	PassTicket string   `xml:"pass_ticket" json:"-"`
+	DeviceID   string   `xml:"-" json:"DeviceID"`
 }
 
 type BaseResponse struct {
@@ -217,10 +216,15 @@ type NotifyParams struct {
 	ClientMsgId  int
 }
 
+type SyncCheckResp struct {
+	RetCode  int `json:"retcode"`
+	Selector int `json:"selector"`
+}
+
 type SyncParams struct {
-	BaseRequest *BaseRequest `json:"BaseRequest"`
-	SyncKey     string       `json:"SyncKey"`
-	RR          int64        `json:"rr"`
+	BaseRequest BaseRequest `json:"BaseRequest"`
+	SyncKey     string      `json:"SyncKey"`
+	RR          int64       `json:"rr"`
 }
 
 type SyncResp struct {

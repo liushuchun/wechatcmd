@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -30,12 +31,17 @@ func (w *Wechat) GetContacts() (err error) {
 func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	name := "webwxsync"
 	resp := new(SyncResp)
-	url := fmt.Sprintf("%s/%s?sid=%s&skey=%s&pass_ticket=%s", w.BaseUri, name, w.Sid, w.Request.Skey, w.PassTicket)
-	data, err := json.Marshal(SyncParams{
-		BaseRequest: w.Request,
+	url := fmt.Sprintf("%s/%s?sid=%s&pass_ticket=%s&skey=%s", w.BaseUri, name, w.Request.Wxsid, w.Request.PassTicket, w.Request.Skey)
+	params := SyncParams{
+		BaseRequest: *w.Request,
 		SyncKey:     w.SyncKeyStr,
-		RR:          time.Now().Unix(),
-	})
+		RR:          ^time.Now().Unix(),
+	}
+	data, err := json.Marshal(params)
+
+	w.Log.Println(url)
+	w.Log.Println(string(data))
+
 	if err := w.Send(url, bytes.NewReader(data), resp); err != nil {
 		return msgs, err
 	}
@@ -45,15 +51,17 @@ func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 
 func (w *Wechat) SyncDaemon(msgIn chan Message) {
 	for {
+
 		msgs, err := w.getSyncMsg()
+		w.Log.Printf("the msgs:%+v", msgs)
+
 		if err != nil {
-			continue
+			w.Log.Printf("w.getSyncMsg() error:%+v", err)
 		}
 		for _, msg := range msgs {
 			msgIn <- msg
 		}
-		time.Sleep(time.Second * 2)
-
+		time.Sleep(time.Second * 4)
 	}
 }
 
@@ -99,11 +107,45 @@ func (w *Wechat) TestCheck() (err error) {
 		w.SyncHost = host
 
 	}*/
+	for _, host := range SyncHosts {
+		w.SyncHost = host
+		resp, err := w.SyncCheck()
+		if err != nil {
+			continue
+		}
+		if resp.RetCode == 0 {
+			break
+		}
+
+	}
+
 	return
 }
 
-func (w *Wechat) SyncCheck() (err error) {
-	//checkUrl:=fmt.Sprintf("https://%s/cgi-bin/mmwebwx-bin/synccheck?sid=%s&uin=%s&skey=%s&deviceid=%s&synckey=%s&_=%s"+, w.SyncHost,w.Sid,w.Uin,w.Skey,w.DeviceId,w.SyncKeys[0])
+func (w *Wechat) SyncCheck() (resp SyncCheckResp, err error) {
+	params := url.Values{}
+	curTime := strconv.FormatInt(time.Now().Unix(), 10)
+	params.Set("r", curTime)
+	params.Set("sid", w.Request.Wxsid)
+	params.Set("uin", strconv.FormatInt(int64(w.Request.Wxuin), 10))
+	params.Set("skey", w.Request.Skey)
+	params.Set("deviceid", w.Request.DeviceID)
+	params.Set("synckey", w.SyncKeyStr)
+	params.Set("_", curTime)
+	checkUrl := fmt.Sprintf("https://%s/cgi-bin/mmwebwx-bin/synccheck?sid=%s&uin=%s&skey=%s&deviceid=%s&synckey=%s&_=%d&r=%d",
+		w.SyncHost, w.Request.Wxsid, w.Request.Wxuin, w.Request.Skey, w.Request.DeviceID, w.SyncKeyStr, curTime, curTime)
+
+	respBody, err := http.Get(checkUrl)
+	defer respBody.Body.Close()
+	body, err := ioutil.ReadAll(respBody.Body)
+
+	if err != nil {
+		return
+	}
+
+	resp = SyncCheckResp{}
+	err = json.Unmarshal(body, &resp)
+
 	return
 }
 
