@@ -1,4 +1,4 @@
-# wechatcmd
+# wechatcmd[![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd/fork) ![Build](https://img.shields.io/teamcity/http/teamcity.jetbrains.com/s/bt345.svg)
 =================
 ## 微信命令行版本
 开发这个版本，你懂得，:)
@@ -57,6 +57,6 @@
 - [ ] 获取其他消息
 - [ ] 聊天
 - [ ] 读取图片
-
+- [ ] 自动保存消息到本地
 
 

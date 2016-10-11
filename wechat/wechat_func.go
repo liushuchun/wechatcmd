@@ -27,6 +27,46 @@ func (w *Wechat) GetContacts() (err error) {
 	return
 }
 
+func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
+	name := "webwxsync"
+	resp := new(SyncResp)
+	url := fmt.Sprintf("%s/%s?sid=%s&skey=%s&pass_ticket=%s", w.BaseUri, name, w.Sid, w.Request.Skey, w.PassTicket)
+	data, err := json.Marshal(SyncParams{
+		BaseRequest: w.Request,
+		SyncKey:     w.SyncKeyStr,
+		RR:          time.Now().Unix(),
+	})
+	if err := w.Send(url, bytes.NewReader(data), resp); err != nil {
+		return msgs, err
+	}
+	msgs = resp.AddMsgList
+	return
+}
+
+func (w *Wechat) SyncDaemon(msgIn chan Message) {
+	for {
+		msgs, err := w.getSyncMsg()
+		if err != nil {
+			continue
+		}
+		for _, msg := range msgs {
+			msgIn <- msg
+		}
+		time.Sleep(time.Second * 2)
+
+	}
+}
+
+func (w *Wechat) MsgDaemon(msgOut chan MessageOut) {
+	msg := MessageOut{}
+	for {
+		select {
+		case msg = <-msgOut:
+			w.Log.Printf("the msg to send %+v", msg)
+		}
+	}
+}
+
 func (w *Wechat) StatusNotify() (err error) {
 	statusURL := w.BaseUri + fmt.Sprintf("/webwxstatusnotify?lang=zh_CN&pass_ticket=%s", w.Request.PassTicket)
 	resp := new(NotifyResp)

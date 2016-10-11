@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	ui "github.com/gizak/termui"
 	"github.com/liushuchun/wechatcmd/wechat"
 )
@@ -19,10 +21,11 @@ type Layout struct {
 
 	currentMsgCount int
 	maxMsgCount     int
-	userIn          chan []string       // 用户的刷新
-	chatIn          chan wechat.Message // 聊天界面的消息刷新
-	msgIn           chan wechat.Message // 消息刷新
-	textOut         chan string         //  消息输出
+	userIn          chan []string          // 用户的刷新
+	chatIn          chan wechat.Message    // 聊天界面的消息刷新
+	msgIn           chan wechat.Message    // 消息刷新
+	msgOut          chan wechat.MessageOut //  消息输出
+	closeChan       chan int
 	showUserList    []string
 	userCount       int //用户总数，这里有重复,后面会修改
 	pageCount       int // page总数。
@@ -31,7 +34,7 @@ type Layout struct {
 	pageSize        int // page的size默认是50
 }
 
-func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Message, textOut chan string) *Layout {
+func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Message, msgOut chan wechat.MessageOut, closeChan chan int) *Layout {
 	//用户列表框
 	userList = append(initUserList, userList...)
 	size := len(userList)
@@ -91,7 +94,8 @@ func NewLayout(initUserList, userList []string, chatIn, msgIn chan wechat.Messag
 		chatBox:         chatBox,
 		editBox:         editBox,
 		msgIn:           msgIn,
-		textOut:         textOut,
+		msgOut:          msgOut,
+		closeChan:       closeChan,
 		currentMsgCount: 0,
 		maxMsgCount:     18,
 		userCount:       len(userList),
@@ -161,14 +165,17 @@ func (l *Layout) Init() {
 }
 
 func (l *Layout) displayMsgIn() {
-	for m := range l.msgIn {
-		if l.currentMsgCount >= l.maxMsgCount {
-			resetPar(l.msgInBox)
-			l.currentMsgCount = 0
+	var msg wechat.Message
+	for {
+		select {
+		case msg = <-l.chatIn:
+			fmt.Println("聊天消息进入:%v", msg)
+		case msg = <-l.msgIn:
+			fmt.Println("各类消息进入:%v", msg)
+		case <-l.closeChan:
+			break
 		}
-		formattedMsg := "(" + m.Timestamp + ") " + m.FromUser + ": " + m.Content + "\n"
-		l.currentMsgCount++
-		appendToPar(l.msgInBox, formattedMsg)
+
 	}
 }
 
@@ -202,11 +209,11 @@ func (l *Layout) NextUser() {
 	ui.Render(l.userListBox)
 }
 
-func (l *Layout) SendText(text string) {
+func (l *Layout) SendText(text wechat.MessageOut) {
 
-	appendToPar(l.msgInBox, text)
+	//appendToPar(l.msgInBox, fmt.Sprintf(text))
 
-	l.textOut <- text
+	l.msgOut <- text
 }
 
 func AddBgColor(msg string) string {

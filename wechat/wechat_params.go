@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 type Config struct {
@@ -13,12 +14,41 @@ type Config struct {
 	ReplyMsgs []string `json:"reply_msgs"`
 }
 
+type MessageOut struct {
+	ToUserName string
+	Content    string
+	Type       int
+}
+
 type Message struct {
-	FromUser  string `json:"from_user"`
-	ToUser    string `json:"to_user"`
-	Group     string `json:"group"`
-	Content   string `json:"content"`
-	Timestamp string `json:"time"`
+	FromUserName         string
+	PlayLength           int
+	RecommendInfo        []string
+	Content              string
+	StatusNotifyUserName string
+	StatusNotifyCode     int
+	Status               int
+	VoiceLength          int
+	ToUserName           string
+	ForwardFlag          int
+	AppMsgType           int
+	AppInfo              AppInfo
+	Url                  string
+	ImgStatus            int
+	MsgType              int
+	ImgHeight            int
+	MediaId              string
+	FileName             string
+	FileSize             string
+}
+
+func (m Message) String() string {
+	return time.Now().Format("2006-01-02 15:04:05") + " " + m.FromUserName + "->" + m.ToUserName + ":\n    " + m.Content + "\n"
+}
+
+type AppInfo struct {
+	Type  int
+	AppID string
 }
 
 type GetUUIDParams struct {
@@ -185,6 +215,19 @@ type NotifyParams struct {
 	FromUserName string
 	ToUserName   string
 	ClientMsgId  int
+}
+
+type SyncParams struct {
+	BaseRequest *BaseRequest `json:"BaseRequest"`
+	SyncKey     string       `json:"SyncKey"`
+	RR          int64        `json:"rr"`
+}
+
+type SyncResp struct {
+	Response
+	SyncKey      SyncKey   `json:"SyncKey"`
+	ContinueFlag int       `json:"ContinueFlag"`
+	AddMsgList   []Message `json:"AddMsgList"`
 }
 
 type NotifyResp struct {
