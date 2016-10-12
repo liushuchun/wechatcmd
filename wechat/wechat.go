@@ -36,7 +36,7 @@ var (
 		"webwxgetvoice":   "voices",
 		"_showQRCodeImg":  "qrcodes",
 	}
-	AppId       = "wx782c26e4c19acffb"
+	AppID       = "wx782c26e4c19acffb"
 	Lang        = "zh_CN"
 	LastCheckTs = time.Now()
 	LoginUrl    = "https://login.weixin.qq.com/jslogin"
@@ -59,7 +59,7 @@ type Wechat struct {
 	LowSyncKey      string
 	SyncKeyStr      string
 	SyncHost        string
-	SyncKeys        []KeyVal
+	SyncKey         SyncKey
 	Users           []string
 	InitContactList []User    //谈话的人
 	MemberList      []*Member //
@@ -222,7 +222,7 @@ func (w *Wechat) SetSynKey() {
 
 func (w *Wechat) GetUUID() (err error) {
 	params := url.Values{}
-	params.Set("appid", AppId)
+	params.Set("appid", AppID)
 	params.Set("fun", "new")
 	params.Set("lang", "zh_CN")
 	params.Set("_", strconv.FormatInt(time.Now().Unix(), 10))
@@ -288,9 +288,9 @@ func (w *Wechat) Login() (err error) {
 		w.InitContactList = append(w.InitContactList, contact)
 	}
 	w.User = newResp.User
-	w.SyncKeys = newResp.SyncKey.List
+	w.SyncKey = newResp.SyncKey
 	w.SyncKeyStr = ""
-	for i, item := range w.SyncKeys {
+	for i, item := range w.SyncKey.List {
 
 		if i == 0 {
 			w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)

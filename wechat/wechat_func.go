@@ -36,7 +36,7 @@ func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	url := fmt.Sprintf("%s/%s?sid=%s&pass_ticket=%s&skey=%s", w.BaseUri, name, w.Request.Wxsid, w.Request.PassTicket, w.Request.Skey)
 	params := SyncParams{
 		BaseRequest: *w.Request,
-		SyncKey:     w.SyncKeyStr,
+		SyncKey:     w.SyncKey,
 		RR:          ^time.Now().Unix(),
 	}
 	data, err := json.Marshal(params)
@@ -44,14 +44,14 @@ func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	w.Log.Println(url)
 	w.Log.Println(string(data))
 
-	if err := w.SendTest(url, bytes.NewReader(data), syncResp); err != nil {
+	if err := w.Send(url, bytes.NewReader(data), syncResp); err != nil {
 		w.Log.Printf("w.Send(%s,%s,%+v) with error:%v", url, string(data), syncResp, err)
 		return nil, err
 	}
 	if syncResp.BaseResponse.Ret == 0 {
-		w.SyncKeys = syncResp.SyncKey.List
+		w.SyncKey = syncResp.SyncKey
 		w.SyncKeyStr = ""
-		for i, item := range w.SyncKeys {
+		for i, item := range w.SyncKey.List {
 			if i == 0 {
 				w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
 				continue

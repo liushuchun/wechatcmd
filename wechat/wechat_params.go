@@ -52,7 +52,7 @@ type AppInfo struct {
 }
 
 type GetUUIDParams struct {
-	AppId    string  `json:"appid"`
+	AppID    string  `json:"appid"`
 	Fun      string  `json:"fun"`
 	Lang     string  `json:"lang"`
 	UnixTime float64 `json:"-"`
@@ -223,7 +223,7 @@ type SyncCheckResp struct {
 
 type SyncParams struct {
 	BaseRequest BaseRequest `json:"BaseRequest"`
-	SyncKey     string      `json:"SyncKey"`
+	SyncKey     SyncKey     `json:"SyncKey"`
 	RR          int64       `json:"rr"`
 }
 
@@ -241,7 +241,7 @@ type NotifyResp struct {
 
 func NewGetUUIDParams(appid, fun, lang string, times float64) *GetUUIDParams {
 	return &GetUUIDParams{
-		AppId:    appid,
+		AppID:    appid,
 		Fun:      fun,
 		Lang:     lang,
 		UnixTime: times,
