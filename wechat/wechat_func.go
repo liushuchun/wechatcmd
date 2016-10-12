@@ -44,18 +44,20 @@ func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	w.Log.Println(url)
 	w.Log.Println(string(data))
 
-	if err := w.Send(url, bytes.NewReader(data), syncResp); err != nil {
+	if err := w.SendTest(url, bytes.NewReader(data), syncResp); err != nil {
 		w.Log.Printf("w.Send(%s,%s,%+v) with error:%v", url, string(data), syncResp, err)
 		return nil, err
 	}
-	w.SyncKeys = syncResp.SyncKey.List
-	w.SyncKeyStr = ""
-	for i, item := range w.SyncKeys {
-		if i == 0 {
-			w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
-			continue
+	if syncResp.BaseResponse.Ret == 0 {
+		w.SyncKeys = syncResp.SyncKey.List
+		w.SyncKeyStr = ""
+		for i, item := range w.SyncKeys {
+			if i == 0 {
+				w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
+				continue
+			}
+			w.SyncKeyStr += "|" + strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
 		}
-		w.SyncKeyStr += "|" + strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
 	}
 
 	msgs = syncResp.AddMsgList
@@ -266,7 +268,41 @@ func (w *Wechat) Send(apiURI string, body io.Reader, call Caller) (err error) {
 		return
 	}
 	defer resp.Body.Close()
+
 	reader := resp.Body.(io.Reader)
+
+	if err = json.NewDecoder(reader).Decode(call); err != nil {
+		w.Log.Printf("the error:%+v", err)
+		return
+	}
+	if !call.IsSuccess() {
+		return call.Error()
+	}
+	return
+}
+
+func (w *Wechat) SendTest(apiURI string, body io.Reader, call Caller) (err error) {
+	method := "GET"
+	if body != nil {
+		method = "POST"
+	}
+
+	req, err := http.NewRequest(method, apiURI, body)
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	resp, err := w.Client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	reader := resp.Body.(io.Reader)
+
+	respBody, err := ioutil.ReadAll(reader)
+	w.Log.Printf("the respBody:%s", string(respBody))
 
 	if err = json.NewDecoder(reader).Decode(call); err != nil {
 		w.Log.Printf("the error:%+v", err)

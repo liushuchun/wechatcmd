@@ -25,15 +25,34 @@ type Config struct {
 
 func main() {
 
-	ct.Foreground(ct.Yellow, true)
+	ct.Foreground(ct.Green, true)
 	flag.Parse()
-	logger := log.New(os.Stdout, "[**AI**]:", log.LstdFlags)
+	logger := log.New(os.Stdout, "[*AI*]:", log.LstdFlags)
 
 	logger.Println("启动...")
-	wechat := chat.NewWechat(logger)
+	fileName := "main.log"
+	var logFile *os.File
+	if _, err := os.Stat(fileName); err != nil {
+		logFile, err = os.Create(fileName)
+		if err != nil {
+			logger.Println("创建日志文件失败")
+			return
+		}
+	} else {
+		logFile, err = os.Open(fileName)
+		if err != nil {
+			logger.Println("打开日志文件失败")
+			return
+		}
+	}
+	defer logFile.Close()
+
+	wxLogger := log.New(logFile, "[*]", log.LstdFlags)
+
+	wechat := chat.NewWechat(wxLogger)
 
 	if err := wechat.WaitForLogin(); err != nil {
-		wechat.Log.Fatalf("等待失败：%s\n", err.Error())
+		logger.Fatalf("等待失败：%s\n", err.Error())
 		return
 	}
 	srcPath, err := os.Getwd()
@@ -54,32 +73,32 @@ func main() {
 	var config *Config
 	err = json.Unmarshal(b, &config)
 
-	wechat.Log.Printf("登陆...")
+	logger.Printf("登陆...")
 	if err := wechat.Login(); err != nil {
-		wechat.Log.Printf("登陆失败：%v\n", err)
+		logger.Printf("登陆失败：%v\n", err)
 		return
 	}
-	logger.Printf("the config:%+v", config)
+	logger.Printf("配置文件:%+v\n", config)
 
-	wechat.Log.Println("成功")
+	logger.Println("成功")
 
-	wechat.Log.Println("微信初始化成功...")
+	logger.Println("微信初始化成功...")
 
-	wechat.Log.Println("开启状态栏通知...")
+	logger.Println("开启状态栏通知...")
 	if err := wechat.StatusNotify(); err != nil {
 		return
 	}
 	if err := wechat.GetContacts(); err != nil {
-		wechat.Log.Fatalf("拉取联系人失败:%v\n", err)
+		logger.Fatalf("拉取联系人失败:%v\n", err)
 		return
 	}
 	if err := wechat.TestCheck(); err != nil {
-		wechat.Log.Fatalf("检查状态失败:%v\n", err)
+		logger.Fatalf("检查状态失败:%v\n", err)
 		return
 	}
 
 	itemList := []string{}
-	wechat.Log.Printf("the initcontact:%+v", wechat.InitContactList)
+	logger.Printf("the initcontact:%+v", wechat.InitContactList)
 	for _, member := range wechat.InitContactList {
 		itemList = append(itemList, member.NickName)
 	}
