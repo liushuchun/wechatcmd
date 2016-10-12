@@ -67,11 +67,14 @@ func main() {
 
 	wechat.Log.Println("开启状态栏通知...")
 	if err := wechat.StatusNotify(); err != nil {
-
 		return
 	}
 	if err := wechat.GetContacts(); err != nil {
-		wechat.Log.Fatalf("拉取联系人失败%v\n", err)
+		wechat.Log.Fatalf("拉取联系人失败:%v\n", err)
+		return
+	}
+	if err := wechat.TestCheck(); err != nil {
+		wechat.Log.Fatalf("检查状态失败:%v\n", err)
 		return
 	}
 

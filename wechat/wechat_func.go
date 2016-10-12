@@ -3,11 +3,13 @@ package wechat
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"time"
 )
@@ -30,7 +32,7 @@ func (w *Wechat) GetContacts() (err error) {
 
 func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	name := "webwxsync"
-	resp := new(SyncResp)
+	syncResp := new(SyncResp)
 	url := fmt.Sprintf("%s/%s?sid=%s&pass_ticket=%s&skey=%s", w.BaseUri, name, w.Request.Wxsid, w.Request.PassTicket, w.Request.Skey)
 	params := SyncParams{
 		BaseRequest: *w.Request,
@@ -42,25 +44,65 @@ func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
 	w.Log.Println(url)
 	w.Log.Println(string(data))
 
-	if err := w.Send(url, bytes.NewReader(data), resp); err != nil {
-		return msgs, err
+	if err := w.Send(url, bytes.NewReader(data), syncResp); err != nil {
+		w.Log.Printf("w.Send(%s,%s,%+v) with error:%v", url, string(data), syncResp, err)
+		return nil, err
 	}
-	msgs = resp.AddMsgList
+	w.SyncKeys = syncResp.SyncKey.List
+	w.SyncKeyStr = ""
+	for i, item := range w.SyncKeys {
+		if i == 0 {
+			w.SyncKeyStr = strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
+			continue
+		}
+		w.SyncKeyStr += "|" + strconv.Itoa(item.Key) + "_" + strconv.Itoa(item.Val)
+	}
+
+	msgs = syncResp.AddMsgList
 	return
 }
 
 func (w *Wechat) SyncDaemon(msgIn chan Message) {
 	for {
 
-		msgs, err := w.getSyncMsg()
-		w.Log.Printf("the msgs:%+v", msgs)
-
+		resp, err := w.SyncCheck()
 		if err != nil {
-			w.Log.Printf("w.getSyncMsg() error:%+v", err)
+			w.Log.Printf("w.SyncCheck() with error:%+v\n", err)
+			continue
 		}
-		for _, msg := range msgs {
-			msgIn <- msg
+		switch resp.RetCode {
+		case 1100:
+			w.Log.Println("从微信上登出")
+		case 1101:
+			w.Log.Println("从其他设备上登陆")
+			break
+		case 0:
+			switch resp.Selector {
+			case 2, 3: //有消息,未知
+				msgs, err := w.getSyncMsg()
+				w.Log.Printf("the msgs:%+v\n", msgs)
+
+				if err != nil {
+					w.Log.Printf("w.getSyncMsg() error:%+v\n", err)
+				}
+
+				for _, msg := range msgs {
+					msgIn <- msg
+				}
+			case 4: //通讯录更新
+				w.GetContacts()
+			case 6: //可能是红包
+				w.Log.Println("请速去手机抢红包")
+			case 7:
+				w.Log.Println("在手机上操作了微信")
+			case 0:
+				w.Log.Println("无事件")
+			}
+		default:
+			w.Log.Printf("the resp:%+v", resp)
+			continue
 		}
+
 		time.Sleep(time.Second * 4)
 	}
 }
@@ -105,19 +147,8 @@ func (w *Wechat) GetContactsInBatch() (err error) {
 func (w *Wechat) TestCheck() (err error) {
 	/*for _, host := range Hosts {
 		w.SyncHost = host
-
 	}*/
-	for _, host := range SyncHosts {
-		w.SyncHost = host
-		resp, err := w.SyncCheck()
-		if err != nil {
-			continue
-		}
-		if resp.RetCode == 0 {
-			break
-		}
-
-	}
+	w.SyncHost = SyncHosts[0]
 
 	return
 }
@@ -132,20 +163,40 @@ func (w *Wechat) SyncCheck() (resp SyncCheckResp, err error) {
 	params.Set("deviceid", w.Request.DeviceID)
 	params.Set("synckey", w.SyncKeyStr)
 	params.Set("_", curTime)
-	checkUrl := fmt.Sprintf("https://%s/cgi-bin/mmwebwx-bin/synccheck?sid=%s&uin=%s&skey=%s&deviceid=%s&synckey=%s&_=%d&r=%d",
-		w.SyncHost, w.Request.Wxsid, w.Request.Wxuin, w.Request.Skey, w.Request.DeviceID, w.SyncKeyStr, curTime, curTime)
+	checkUrl := fmt.Sprintf("https://%s/cgi-bin/mmwebwx-bin/synccheck", w.SyncHost)
+	Url, err := url.Parse(checkUrl)
+	if err != nil {
+		return
+	}
+	Url.RawQuery = params.Encode()
+	w.Log.Println(Url.String())
 
-	respBody, err := http.Get(checkUrl)
-	defer respBody.Body.Close()
-	body, err := ioutil.ReadAll(respBody.Body)
+	ret, err := w.Client.Get(Url.String())
+	if err != nil {
+		w.Log.Printf("the error is :%+v", err)
+		return
+	}
+	defer ret.Body.Close()
+
+	body, err := ioutil.ReadAll(ret.Body)
 
 	if err != nil {
 		return
 	}
-
+	w.Log.Println(string(body))
 	resp = SyncCheckResp{}
-	err = json.Unmarshal(body, &resp)
+	reRedirect := regexp.MustCompile(`window.synccheck={retcode:"(\d+)",selector:"(\d+)"}`)
+	pmSub := reRedirect.FindStringSubmatch(string(body))
+	w.Log.Printf("the data:%+v", pmSub)
+	if len(pmSub) != 0 {
+		resp.RetCode, err = strconv.Atoi(pmSub[1])
+		resp.Selector, err = strconv.Atoi(pmSub[2])
+		w.Log.Printf("the resp:%+v", resp)
 
+	} else {
+		err = errors.New("regex error in window.redirect_uri")
+		return
+	}
 	return
 }
 
@@ -218,6 +269,7 @@ func (w *Wechat) Send(apiURI string, body io.Reader, call Caller) (err error) {
 	reader := resp.Body.(io.Reader)
 
 	if err = json.NewDecoder(reader).Decode(call); err != nil {
+		w.Log.Printf("the error:%+v", err)
 		return
 	}
 	if !call.IsSuccess() {

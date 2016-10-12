@@ -1,4 +1,4 @@
-# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd/fork) ![Build](https://img.shields.io/teamcity/http/teamcity.jetbrains.com/s/bt345.svg)
+# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd/fork) ![Build](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg)
 =================
 ## 微信命令行版本
 开发这个命令行版本，是为了更加方便聊天哦，对于习惯用命令行的同学，可能会比较喜欢。
