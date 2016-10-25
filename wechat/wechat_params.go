@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 )
 
 type Config struct {
@@ -40,10 +39,12 @@ type Message struct {
 	MediaId              string
 	FileName             string
 	FileSize             string
+	FromUserNickName     string
+	ToUserNickName       string
 }
 
 func (m Message) String() string {
-	return time.Now().Format("2006-01-02 15:04:05") + " " + m.FromUserName + "->" + m.ToUserName + ":\n    " + m.Content + "\n"
+	return m.FromUserNickName + "->" + m.ToUserNickName + ":\n    " + m.Content + "\n"
 }
 
 type AppInfo struct {
@@ -129,6 +130,30 @@ func (r *Response) Error() error {
 	return fmt.Errorf("message:[%s]", r.BaseResponse.ErrMsg)
 }
 
+type MemberResp struct {
+	Response
+	MemberCount  int
+	ChatRoomName string
+	MemberList   []Member
+	Seq          int
+}
+
+func (this *Member) IsNormal(mySelf string) bool {
+	return this.VerifyFlag&8 == 0 && // 公众号/服务号
+		!strings.HasPrefix(this.UserName, "@@") && // 群聊
+		this.UserName != mySelf && // 自己
+		!this.IsSpecail() // 特殊账号
+}
+
+func (this *Member) IsSpecail() bool {
+	for i, count := 0, len(SpecialUsers); i < count; i++ {
+		if this.UserName == SpecialUsers[i] {
+			return true
+		}
+	}
+	return false
+}
+
 type User struct {
 	UserName          string `json:"UserName"`
 	Uin               int    `json:"Uin"`
@@ -149,30 +174,6 @@ type User struct {
 	WebWxPluginSwitch int    `json:"WebWxPluginSwitch" xml:""`
 	HeadImgFlag       int    `json:"HeadImgFlag" xml:""`
 	SnsFlag           int    `json:"SnsFlag" xml:""`
-}
-
-type MemberResp struct {
-	Response
-	MemberCount  int
-	ChatRoomName string
-	MemberList   []*Member
-	Seq          int
-}
-
-func (this *Member) IsNormal(mySelf string) bool {
-	return this.VerifyFlag&8 == 0 && // 公众号/服务号
-		!strings.HasPrefix(this.UserName, "@@") && // 群聊
-		this.UserName != mySelf && // 自己
-		!this.IsSpecail() // 特殊账号
-}
-
-func (this *Member) IsSpecail() bool {
-	for i, count := 0, len(SpecialUsers); i < count; i++ {
-		if this.UserName == SpecialUsers[i] {
-			return true
-		}
-	}
-	return false
 }
 
 type Member struct {
@@ -229,9 +230,9 @@ type SyncParams struct {
 
 type SyncResp struct {
 	Response
-	SyncKey      SyncKey   `json:"SyncKey"`
-	ContinueFlag int       `json:"ContinueFlag"`
-	AddMsgList   []Message `json:"AddMsgList"`
+	SyncKey      SyncKey       `json:"SyncKey"`
+	ContinueFlag int           `json:"ContinueFlag"`
+	AddMsgList   []interface{} `json:"AddMsgList"`
 }
 
 type NotifyResp struct {

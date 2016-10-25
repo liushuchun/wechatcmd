@@ -11,6 +11,7 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -21,16 +22,57 @@ func (w *Wechat) GetContacts() (err error) {
 	if err := w.Send(apiURI, nil, resp); err != nil {
 		return err
 	}
-	w.MemberList, w.TotalMember = make([]*Member, 0, resp.MemberCount/5*2), resp.MemberCount
-	for _, member := range resp.MemberList {
-		if member.IsNormal(w.User.UserName) {
-			w.MemberList = append(w.MemberList, member)
-		}
+
+	w.MemberList = resp.MemberList
+	w.TotalMember = resp.MemberCount
+	for _, member := range w.MemberList {
+		w.MemberMap[member.UserName] = member
 	}
+
+	for _, user := range w.ChatSet {
+		exist := false
+		for _, initUser := range w.InitContactList {
+			if user == initUser.UserName {
+				exist = true
+				break
+			}
+		}
+		if !exist {
+			value, ok := w.MemberMap[user]
+			if ok {
+				contact := User{
+					UserName:  value.UserName,
+					NickName:  value.NickName,
+					Signature: value.Signature,
+				}
+
+				w.InitContactList = append(w.InitContactList, contact)
+			}
+		}
+
+	}
+
 	return
 }
 
-func (w *Wechat) getSyncMsg() (msgs []Message, err error) {
+func (w *Wechat) getRoomMembers(roomID string) (map[string]string, error) {
+	url := fmt.Sprintf("%s/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.BaseUri, w.GetUnixTime(), w.Request.PassTicket)
+	params := make(map[string]interface{})
+	params["BaseRequest"] = *w.Request
+	params["Count"] = 1
+	params["List"] = []map[string]string{}
+	l := []map[string]string{}
+	params["List"] = append(l, map[string]string{
+		"UserName":   roomID,
+		"ChatRoomId": "",
+	})
+	members := []string{}
+	stats := make(map[string]string)
+	fmt.Println(members, stats, url)
+	return nil, nil
+}
+
+func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
 	name := "webwxsync"
 	syncResp := new(SyncResp)
 	url := fmt.Sprintf("%s/%s?sid=%s&pass_ticket=%s&skey=%s", w.BaseUri, name, w.Request.Wxsid, w.Request.PassTicket, w.Request.Skey)
@@ -88,8 +130,33 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 					w.Log.Printf("w.getSyncMsg() error:%+v\n", err)
 				}
 
-				for _, msg := range msgs {
-					msgIn <- msg
+				for _, m := range msgs {
+					msg := Message{}
+					msgType := m.(map[string]interface{})["MsgType"].(float64)
+					msg.MsgType = int(msgType)
+					msg.FromUserName = m.(map[string]interface{})["FromUserName"].(string)
+					if nickNameFrom, ok := w.MemberMap[msg.FromUserName]; ok {
+						msg.FromUserNickName = nickNameFrom.NickName
+					}
+
+					msg.ToUserName = m.(map[string]interface{})["ToUserName"].(string)
+					if nickNameTo, ok := w.MemberMap[msg.ToUserName]; ok {
+						msg.ToUserNickName = nickNameTo.NickName
+					}
+
+					msg.Content = m.(map[string]interface{})["Content"].(string)
+					msg.Content = strings.Replace(msg.Content, "&lt;", "<", -1)
+					msg.Content = strings.Replace(msg.Content, "&gt;", ">", -1)
+					msg.Content = strings.Replace(msg.Content, " ", " ", 1)
+					if msg.MsgType == 1 {
+						msgIn <- msg
+						if msg.FromUserName[:2] == "@@" {
+							//群消息，暂时不处理
+						} else {
+
+						}
+					}
+
 				}
 			case 4: //通讯录更新
 				w.GetContacts()
@@ -102,10 +169,12 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 			}
 		default:
 			w.Log.Printf("the resp:%+v", resp)
+			time.Sleep(time.Second * 4)
+
 			continue
 		}
-
 		time.Sleep(time.Second * 4)
+
 	}
 }
 

@@ -171,12 +171,15 @@ func (l *Layout) displayMsgIn() {
 		case msg = <-l.chatIn:
 			fmt.Println("聊天消息进入:%v", msg)
 		case msg = <-l.msgIn:
-			fmt.Println("各类消息进入:%v", msg)
+			text := msg.String()
+			l.msgInBox.Text = l.msgInBox.Text + text
+			ui.Render(l.msgInBox)
 		case <-l.closeChan:
 			break
 		}
 
 	}
+	return
 }
 
 func (l *Layout) NextUser() {

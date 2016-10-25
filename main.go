@@ -92,6 +92,7 @@ func main() {
 		logger.Fatalf("拉取联系人失败:%v\n", err)
 		return
 	}
+
 	if err := wechat.TestCheck(); err != nil {
 		logger.Fatalf("检查状态失败:%v\n", err)
 		return

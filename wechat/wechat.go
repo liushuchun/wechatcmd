@@ -61,14 +61,14 @@ type Wechat struct {
 	SyncHost        string
 	SyncKey         SyncKey
 	Users           []string
-	InitContactList []User    //谈话的人
-	MemberList      []*Member //
-	ContactList     []User    //好友
-	GroupList       []string  //群
-	GroupMemberList []string  //群友
-	PublicUserList  []User    //公众号
-	SpecialUserList []User    //特殊账号
-	AutoReplyMode   bool      //default false
+	InitContactList []User   //谈话的人
+	MemberList      []Member //
+	ContactList     []Member //好友
+	GroupList       []string //群
+	GroupMemberList []string //群友
+	PublicUserList  []Member //公众号
+	SpecialUserList []Member //特殊账号
+	AutoReplyMode   bool     //default false
 	AutoOpen        bool
 	Interactive     bool
 	TotalMember     int
@@ -79,6 +79,8 @@ type Wechat struct {
 	Client          *http.Client
 	Request         *BaseRequest
 	Log             *log.Logger
+	MemberMap       map[string]Member
+	ChatSet         []string
 }
 
 func NewWechat(logger *log.Logger) *Wechat {
@@ -110,6 +112,7 @@ func NewWechat(logger *log.Logger) *Wechat {
 		SaveFolder:  path.Join(root, "saved"),
 		QrImagePath: filepath.Join(root, "qr.jpg"),
 		Log:         logger,
+		MemberMap:   make(map[string]Member),
 	}
 
 }
@@ -287,6 +290,8 @@ func (w *Wechat) Login() (err error) {
 	for _, contact := range newResp.ContactList {
 		w.InitContactList = append(w.InitContactList, contact)
 	}
+
+	w.ChatSet = strings.Split(newResp.ChatSet, ",")
 	w.User = newResp.User
 	w.SyncKey = newResp.SyncKey
 	w.SyncKeyStr = ""

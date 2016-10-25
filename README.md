@@ -1,11 +1,11 @@
 # wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd/fork) ![Build](https://img.shields.io/appveyor/ci/gruntjs/grunt.svg)
 =================
 ## 微信命令行版本
-开发这个命令行版本，是为了更加方便聊天哦，对于习惯用命令行的同学，可能会比较喜欢。
+开发这个命令行版本，一是为了熟悉微信的接口，二是方便咱们习惯命令行的同学。
 
-项目还是半成品，欢迎有兴趣的朋友一起加入开发。
+项目还是远未完成，热烈欢迎有兴趣的朋友一起加入开发。
 
-有什么建议可以提pr。谢谢。
+有什么建议可以提issue。谢谢，也欢迎直接提PR。
 
 
 ### 功能特性
