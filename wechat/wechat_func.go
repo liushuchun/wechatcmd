@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"regexp"
@@ -271,7 +272,27 @@ func (w *Wechat) SyncCheck() (resp SyncCheckResp, err error) {
 	return
 }
 
-func (w *Wechat) SendMsg(name, word string, isFile bool) (err error) {
+func (w *Wechat) SendMsg(toUserName, message string, isFile bool) (err error) {
+	resp := new(MsgResp)
+
+	apiUrl := fmt.Sprintf("%s/webwxsendmsg?pass_ticket=%s", w.BaseUri, w.Request.PassTicket)
+	clientMsgId := strconv.Itoa(w.GetUnixTime()) + "0" + strconv.Itoa(rand.Int())[3:6]
+	params := make(map[string]interface{})
+	params["BaseRequest"] = w.BaseRequest
+	msg := make(map[string]interface{})
+	msg["Type"] = 1
+	msg["Content"] = message
+	msg["FromUserName"] = w.User.UserName
+	msg["LocalID"] = clientMsgId
+	msg["ClientMsgId"] = clientMsgId
+	params["Msg"] = msg
+	data, err := json.Marshal(params)
+	if err != nil {
+		w.Log.Printf("json.Marshal(%v):%v\n", params, err)
+	}
+	if err := w.Send(apiUrl, bytes.NewReader(data), resp); err != nil {
+		w.Log.Print("w.Send(%s,%v,%v):%v", apiUrl, string(data), err)
+	}
 
 	return
 }

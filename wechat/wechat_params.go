@@ -95,6 +95,10 @@ type BaseResponse struct {
 	ErrMsg string
 }
 
+type MsgResp struct {
+	Response
+}
+
 type InitResp struct {
 	Response
 	User                User    `json:"User"`
