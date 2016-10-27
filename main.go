@@ -33,20 +33,12 @@ func main() {
 	logger.Println("启动...")
 	fileName := "log.txt"
 	var logFile *os.File
-	if _, err := os.Stat(fileName); err != nil {
-		logFile, err = os.Create(fileName)
-		if err != nil {
-			logger.Println("创建日志文件失败")
-			return
-		}
-	} else {
-		logFile, err = os.Open(fileName)
-		if err != nil {
-			logger.Println("打开日志文件失败")
-			return
-		}
-	}
+	logFile, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+
 	defer logFile.Close()
+	if err != nil {
+		logger.Printf("打开文件失败!\n")
+	}
 
 	wxLogger := log.New(logFile, "[*]", log.LstdFlags)
 
