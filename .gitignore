@@ -1,4 +1,4 @@
-*.o
+*o
 *.a
 *.so
 *.py
@@ -7,7 +7,7 @@ _obj
 _test
 wechatcmd
 /ui/ui
-main.log
+log.txt
 
 # Architecture specific extensions/prefixes
 *.[568vq]

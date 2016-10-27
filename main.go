@@ -18,19 +18,20 @@ const (
 )
 
 type Config struct {
-	SaveToFile bool     `json:"save_to_file"`
-	AutoReply  bool     `json:"auto_reply"`
-	ReplyMsg   []string `json:"reply_msg"`
+	SaveToFile   bool     `json:"save_to_file"`
+	AutoReply    bool     `json:"auto_reply"`
+	AutoReplySrc bool     `json:"auto_reply_src"`
+	ReplyMsg     []string `json:"reply_msg"`
 }
 
 func main() {
 
 	ct.Foreground(ct.Green, true)
 	flag.Parse()
-	logger := log.New(os.Stdout, "[*AI*]:", log.LstdFlags)
+	logger := log.New(os.Stdout, "[wechatcmd]->:", log.LstdFlags)
 
 	logger.Println("启动...")
-	fileName := "main.log"
+	fileName := "log.txt"
 	var logFile *os.File
 	if _, err := os.Stat(fileName); err != nil {
 		logFile, err = os.Create(fileName)
@@ -57,7 +58,7 @@ func main() {
 	}
 	srcPath, err := os.Getwd()
 	if err != nil {
-		logger.Printf("获得路径失败:%#v", err)
+		logger.Printf("获得路径失败:%#v\n", err)
 	}
 	configFile := path.Join(path.Clean(srcPath), "config.json")
 	if _, err := os.Stat(configFile); os.IsNotExist(err) {
@@ -73,14 +74,19 @@ func main() {
 	var config *Config
 	err = json.Unmarshal(b, &config)
 
-	logger.Printf("登陆...")
+	logger.Printf("登陆...\n")
+
+	wechat.AutoReplyMode = config.AutoReply
+	wechat.ReplyMsgs = config.ReplyMsg
+	wechat.AutoReplySrc = config.AutoReplySrc
+
 	if err := wechat.Login(); err != nil {
 		logger.Printf("登陆失败：%v\n", err)
 		return
 	}
 	logger.Printf("配置文件:%+v\n", config)
 
-	logger.Println("成功")
+	logger.Println("成功!")
 
 	logger.Println("微信初始化成功...")
 
@@ -99,7 +105,7 @@ func main() {
 	}
 
 	itemList := []string{}
-	logger.Printf("the initcontact:%+v", wechat.InitContactList)
+
 	for _, member := range wechat.InitContactList {
 		itemList = append(itemList, member.NickName)
 	}

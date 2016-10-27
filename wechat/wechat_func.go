@@ -28,6 +28,12 @@ func (w *Wechat) GetContacts() (err error) {
 	w.TotalMember = resp.MemberCount
 	for _, member := range w.MemberList {
 		w.MemberMap[member.UserName] = member
+		if member.UserName[:2] == "@@" {
+			w.GroupMemberList = append(w.GroupMemberList, member)
+		} else if member.VerifyFlag&8 != 0 {
+			w.PublicUserList = append(w.PublicUserList, member) //公众号
+		}
+
 	}
 
 	for _, user := range w.ChatSet {
@@ -56,8 +62,8 @@ func (w *Wechat) GetContacts() (err error) {
 	return
 }
 
-func (w *Wechat) getRoomMembers(roomID string) (map[string]string, error) {
-	url := fmt.Sprintf("%s/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.BaseUri, w.GetUnixTime(), w.Request.PassTicket)
+func (w *Wechat) getWechatRoomMember(roomID, userId string) (roomName, userName string, err error) {
+	apiUrl := fmt.Sprintf("%s/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.BaseUri, w.GetUnixTime(), w.Request.PassTicket)
 	params := make(map[string]interface{})
 	params["BaseRequest"] = *w.Request
 	params["Count"] = 1
@@ -67,10 +73,8 @@ func (w *Wechat) getRoomMembers(roomID string) (map[string]string, error) {
 		"UserName":   roomID,
 		"ChatRoomId": "",
 	})
-	members := []string{}
-	stats := make(map[string]string)
-	fmt.Println(members, stats, url)
-	return nil, nil
+	fmt.Println(apiUrl, params)
+	return "", "", nil
 }
 
 func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
@@ -107,6 +111,7 @@ func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
 	return
 }
 
+//同步守护goroutine
 func (w *Wechat) SyncDaemon(msgIn chan Message) {
 	for {
 
@@ -149,13 +154,35 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 					msg.Content = strings.Replace(msg.Content, "&lt;", "<", -1)
 					msg.Content = strings.Replace(msg.Content, "&gt;", ">", -1)
 					msg.Content = strings.Replace(msg.Content, " ", " ", 1)
-					if msg.MsgType == 1 {
-						msgIn <- msg
+					switch msg.MsgType {
+					case 1:
+
 						if msg.FromUserName[:2] == "@@" {
 							//群消息，暂时不处理
+							if msg.FromUserNickName == "" {
+								contentSlice := strings.Split(msg.Content, ":<br/>")
+								msg.Content = contentSlice[1]
+
+							}
 						} else {
 
 						}
+						msgIn <- msg
+					case 3:
+						//图片
+					case 34:
+						//语音
+					case 47:
+						//动画表情
+					case 49:
+						//链接
+					case 51:
+						//获取联系人信息成功
+					case 62:
+						//获得一段小视频
+					case 10002:
+						//撤回一条消息
+
 					}
 
 				}
@@ -294,6 +321,10 @@ func (w *Wechat) SendMsg(toUserName, message string, isFile bool) (err error) {
 		w.Log.Print("w.Send(%s,%v,%v):%v", apiUrl, string(data), err)
 	}
 
+	return
+}
+
+func (w *Wechat) GetGroupName(id string) (name string) {
 	return
 }
 

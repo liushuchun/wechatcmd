@@ -65,22 +65,27 @@ type Wechat struct {
 	MemberList      []Member //
 	ContactList     []Member //好友
 	GroupList       []string //群
-	GroupMemberList []string //群友
+	GroupMemberList []Member //群友
 	PublicUserList  []Member //公众号
 	SpecialUserList []Member //特殊账号
-	AutoReplyMode   bool     //default false
-	AutoOpen        bool
-	Interactive     bool
-	TotalMember     int
-	TimeOut         int // 同步时间间隔   default:20
-	MediaCount      int // -1
-	SaveFolder      string
-	QrImagePath     string
-	Client          *http.Client
-	Request         *BaseRequest
-	Log             *log.Logger
-	MemberMap       map[string]Member
-	ChatSet         []string
+
+	AutoReplyMode bool //default false
+	AutoOpen      bool
+	Interactive   bool
+	TotalMember   int
+	TimeOut       int // 同步时间间隔   default:20
+	MediaCount    int // -1
+	SaveFolder    string
+	QrImagePath   string
+	Client        *http.Client
+	Request       *BaseRequest
+	Log           *log.Logger
+	MemberMap     map[string]Member
+	ChatSet       []string
+
+	AutoReply    bool     //是否自动回复
+	ReplyMsgs    []string // 回复的消息列表
+	AutoReplySrc bool     //默认false,自动回复，列表。true调用AI机器人。
 }
 
 func NewWechat(logger *log.Logger) *Wechat {
@@ -88,6 +93,7 @@ func NewWechat(logger *log.Logger) *Wechat {
 	if err != nil {
 		return nil
 	}
+
 	root, err := os.Getwd()
 	transport := *(http.DefaultTransport.(*http.Transport))
 	transport.ResponseHeaderTimeout = 1 * time.Minute
@@ -220,6 +226,18 @@ func (w *Wechat) GetQR() (err error) {
 }
 
 func (w *Wechat) SetSynKey() {
+
+}
+
+func (w *Wechat) AutoReplyMsg() string {
+	if w.AutoReplySrc {
+		return "" //not enabled
+	} else {
+		if len(w.ReplyMsgs) == 0 {
+			return "未设置"
+		}
+		return w.ReplyMsgs[0]
+	}
 
 }
 

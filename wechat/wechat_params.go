@@ -85,7 +85,7 @@ type BaseRequest struct {
 	Message    string   `xml:"message" json:"-"`
 	Skey       string   `xml:"skey" json:"Skey"`
 	Wxsid      string   `xml:"wxsid" json:"Sid"`
-	Wxuin      int      `xml:"wxuin" json:"Uin"`
+	Wxuin      int64    `xml:"wxuin" json:"Uin"`
 	PassTicket string   `xml:"pass_ticket" json:"-"`
 	DeviceID   string   `xml:"-" json:"DeviceID"`
 }
@@ -160,7 +160,7 @@ func (this *Member) IsSpecail() bool {
 
 type User struct {
 	UserName          string `json:"UserName"`
-	Uin               int    `json:"Uin"`
+	Uin               int64  `json:"Uin"`
 	NickName          string `json:"NickName"`
 	HeadImgUrl        string `json:"HeadImgUrl" xml:""`
 	RemarkName        string `json:"RemarkName" xml:""`
@@ -181,7 +181,7 @@ type User struct {
 }
 
 type Member struct {
-	Uin              int
+	Uin              int64
 	UserName         string
 	NickName         string
 	HeadImgUrl       string
