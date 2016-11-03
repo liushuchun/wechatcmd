@@ -20,8 +20,11 @@
 ### 键盘快捷键
 
 <table>
-
-
+    <tr><td>Ctrl-n</td><td>下一页</td></tr>
+    <tr><td>Ctrl-p</td><td>上一页</td></tr>
+    <tr><td>Enter</td><td>输入</td></tr>
+    <tr><td>Ctrl-c</td><td>退出</td></tr>
+    <tr><td>Ctrl-1</td><td>表情</td>t</tr>
 </table>
 
 
@@ -62,5 +65,6 @@
 - [ ] 聊天
 - [ ] 读取图片
 - [ ] 自动保存消息到本地
+- [ ] 表情包的翻译
 
 

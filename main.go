@@ -28,7 +28,7 @@ func main() {
 
 	ct.Foreground(ct.Green, true)
 	flag.Parse()
-	logger := log.New(os.Stdout, "[wechatcmd]->:", log.LstdFlags)
+	logger := log.New(os.Stdout, "[*🤔 *]->:", log.LstdFlags)
 
 	logger.Println("启动...")
 	fileName := "log.txt"
