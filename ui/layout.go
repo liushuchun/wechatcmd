@@ -123,7 +123,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 }
 
 func (l *Layout) Init() {
-	chinese := false
+	//	chinese := false
 	err := ui.Init()
 	if err != nil {
 		panic(err)
