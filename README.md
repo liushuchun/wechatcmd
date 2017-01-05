@@ -3,6 +3,8 @@
 ## 微信命令行版本
 开发这个命令行版本，一是为了熟悉微信的接口，二是方便咱们习惯命令行的同学。
 
+现在是中文的支持不是很好，还没有什么特别好的解决方法。
+
 项目还是远未完成，热烈欢迎有兴趣的朋友一起加入开发。
 
 有什么建议可以提issue。谢谢，也欢迎直接提PR。
@@ -45,7 +47,7 @@
 
 ### 现在实现的界面：
 
-![聊天界面](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/show.gif)
+![聊天动态图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/show.gif)
 
 ![聊天界面](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-0.png)
 ![登陆后图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-1.png)
