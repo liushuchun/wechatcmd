@@ -36,11 +36,14 @@ var (
 		"webwxgetvoice":   "voices",
 		"_showQRCodeImg":  "qrcodes",
 	}
-	AppID       = "wx782c26e4c19acffb"
-	Lang        = "zh_CN"
-	LastCheckTs = time.Now()
-	LoginUrl    = "https://login.weixin.qq.com/jslogin"
-	QrUrl       = "https://login.weixin.qq.com/qrcode/"
+	AppID        = "wx782c26e4c19acffb"
+	Lang         = "zh_CN"
+	LastCheckTs  = time.Now()
+	LoginUrl     = "https://login.weixin.qq.com/jslogin"
+	QrUrl        = "https://login.weixin.qq.com/qrcode/"
+	TuringUrl    = "http://www.tuling123.com/openapi/api"
+	APIKEY       = "391ad66ebad2477b908dce8e79f101e7"
+	TUringUserId = "abc123"
 )
 
 type Wechat struct {
@@ -103,7 +106,7 @@ func NewWechat(logger *log.Logger) *Wechat {
 
 	return &Wechat{
 		Debug:         true,
-		DeviceId:      "e123456789001234",
+		DeviceId:      "e123456789002237",
 		AutoReplyMode: false,
 		Interactive:   false,
 		AutoOpen:      false,

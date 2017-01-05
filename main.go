@@ -96,26 +96,29 @@ func main() {
 		return
 	}
 
-	itemList := []string{}
+	nickNameList := []string{}
+	userIDList := []string{}
 
 	for _, member := range wechat.InitContactList {
-		itemList = append(itemList, member.NickName)
+		nickNameList = append(nickNameList, member.NickName)
+		userIDList = append(userIDList, member.UserName)
+
 	}
-	userList := []string{}
 	for _, member := range wechat.PublicUserList {
-		userList = append(userList, member.NickName)
+		nickNameList = append(nickNameList, member.NickName)
+		userIDList = append(userIDList, member.UserName)
+
 	}
 
 	msgIn := make(chan chat.Message, maxChanSize)
 	msgOut := make(chan chat.MessageOut, maxChanSize)
-	chatIn := make(chan chat.Message, maxChanSize)
 	closeChan := make(chan int, 1)
-
-	layout := ui.NewLayout(itemList, userList, chatIn, msgIn, msgOut, closeChan)
+	autoChan := make(chan int, 1)
+	layout := ui.NewLayout(nickNameList, userIDList, wechat.User.NickName, wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
 
 	go wechat.SyncDaemon(msgIn)
 
-	go wechat.MsgDaemon(msgOut)
+	go wechat.MsgDaemon(msgOut, autoChan)
 
 	layout.Init()
 

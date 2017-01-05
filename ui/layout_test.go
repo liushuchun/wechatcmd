@@ -15,8 +15,7 @@ func Test_UI() {
 	textOut := make(chan string, maxChanSize)
 	initList := []string{"普罗米修斯", "啊琉球私", "盗火者", "拉风小丸子", "自强不吸"}
 	userList := initList
-	chatIn := make(chan wechat.Message, maxChanSize)
 
-	layout := NewLayout(initList, userList, chatIn, msgIn, textOut)
+	layout := NewLayout(initList, userList, msgIn, textOut, nil)
 	layout.Init()
 }

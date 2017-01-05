@@ -44,7 +44,15 @@ type Message struct {
 }
 
 func (m Message) String() string {
-	return m.FromUserNickName + "->" + m.ToUserNickName + ":\n    " + m.Content + "\n"
+	from := m.FromUserNickName
+	to := m.ToUserNickName
+	if from == "" {
+		from = m.FromUserName
+	}
+	if to == "" {
+		to = m.ToUserName
+	}
+	return from + "->" + to + ":" + m.Content + "\n"
 }
 
 type AppInfo struct {

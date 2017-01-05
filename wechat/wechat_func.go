@@ -30,12 +30,17 @@ func (w *Wechat) GetContacts() (err error) {
 		w.MemberMap[member.UserName] = member
 		if member.UserName[:2] == "@@" {
 			w.GroupMemberList = append(w.GroupMemberList, member)
+			w.PublicUserList = append(w.PublicUserList, member) //公众号
+
 		} else if member.VerifyFlag&8 != 0 {
 			w.PublicUserList = append(w.PublicUserList, member) //公众号
 		}
 
 	}
-
+	mb := Member{}
+	mb.NickName = w.User.NickName
+	mb.UserName = w.User.UserName
+	w.MemberMap[w.User.UserName] = mb
 	for _, user := range w.ChatSet {
 		exist := false
 		for _, initUser := range w.InitContactList {
@@ -74,6 +79,7 @@ func (w *Wechat) getWechatRoomMember(roomID, userId string) (roomName, userName 
 		"ChatRoomId": "",
 	})
 	fmt.Println(apiUrl, params)
+
 	return "", "", nil
 }
 
@@ -165,7 +171,20 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 
 							}
 						} else {
+							if w.AutoReply {
+								w.SendMsg(msg.FromUserName, w.AutoReplyMsg(), false)
+							}
+						}
+						if msg.ToUserNickName == "" {
+							if user, ok := w.MemberMap[msg.ToUserName]; ok {
+								msg.ToUserNickName = user.NickName
+							}
 
+						}
+						if msg.FromUserNickName == "" {
+							if user, ok := w.MemberMap[msg.FromUserNickName]; ok {
+								msg.FromUserNickName = user.NickName
+							}
 						}
 						msgIn <- msg
 					case 3:
@@ -206,12 +225,21 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 	}
 }
 
-func (w *Wechat) MsgDaemon(msgOut chan MessageOut) {
+func (w *Wechat) MsgDaemon(msgOut chan MessageOut, autoReply chan int) {
 	msg := MessageOut{}
+	var autoMode int
 	for {
 		select {
 		case msg = <-msgOut:
 			w.Log.Printf("the msg to send %+v", msg)
+			w.SendMsg(msg.ToUserName, msg.Content, false)
+		case autoMode = <-autoReply:
+			w.Log.Println("the autoreply mode:", autoMode)
+			if autoMode == 1 {
+				w.AutoReply = true
+			} else if autoMode == 0 {
+				w.AutoReply = false
+			}
 		}
 	}
 }
@@ -312,6 +340,7 @@ func (w *Wechat) SendMsg(toUserName, message string, isFile bool) (err error) {
 	msg["FromUserName"] = w.User.UserName
 	msg["LocalID"] = clientMsgId
 	msg["ClientMsgId"] = clientMsgId
+	msg["ToUserName"] = toUserName
 	params["Msg"] = msg
 	data, err := json.Marshal(params)
 	if err != nil {
@@ -433,6 +462,28 @@ func (w *Wechat) SendTest(apiURI string, body io.Reader, call Caller) (err error
 		return call.Error()
 	}
 	return
+}
+
+func (w *Wechat) GetTuringReply(msg string) (retMsg string, err error) {
+	params := url.Values{}
+	params.Add("key", TUringUserId)
+	params.Add("info", msg)
+	params.Add("userid", TUringUserId)
+	data, err := json.Marshal(params)
+	if err != nil {
+		return "", err
+	}
+	req, err := http.NewRequest("POST", TuringUrl, bytes.NewReader(data))
+	if err != nil {
+		return "", err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	dt, _ := ioutil.ReadAll(resp.Body)
+	return string(dt), nil
 }
 
 func (w *Wechat) SetCookies() {
