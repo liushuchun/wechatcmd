@@ -33,7 +33,7 @@
 </table>
 
 ### 运行bin文件
-linux,mac,windows编好的包分别在install 下面的linux/ mac/ win/下。
+linux,mac,windows编好的包分别在install 下面的linux/ mac/ win/下。(windows暂时支持的不好，虽然是交叉编译可以运行，但是其UI机制和unix系差的很多，termux支持的并不是很好)
 
 ```
 git clonegit@github.com:liushuchun/wechatcmd.git
