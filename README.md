@@ -32,7 +32,14 @@
     <tr><td>Ctrl-3</td><td>机器人自动回复</td></tr>
 </table>
 
+### 运行bin文件
+linux,mac,windows编好的包分别在install 下面的linux/ mac/ win/下。
 
+```
+git clonegit@github.com:liushuchun/wechatcmd.git
+cd wechatcmd/install/
+进入各自目录
+```
 
 
 ### Mac安装
