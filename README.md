@@ -29,7 +29,7 @@
     <tr><td>Ctrl-c</td><td>退出</td></tr>
     <tr><td>Ctrl-1</td><td>退出自动回复</td></tr>
     <tr><td>Ctrl-2</td><td>启用自动回复</td></tr>
-    <tr><td>Ctrl-3</td><td>机器人自动回复</td></tr>
+    <tr><td>Ctrl-3</td><td>机器人自动回复(还没好)</td></tr>
 </table>
 
 ### 运行bin文件
