@@ -36,7 +36,7 @@
 linux,mac,windows编好的包分别在install 下面的linux/ mac/ win/下。(windows暂时支持的不好，虽然是交叉编译可以运行，但是其UI机制和unix系差的很多，termui支持的并不是很好)
 
 ```
-git clonegit@github.com:liushuchun/wechatcmd.git
+git clone git@github.com:liushuchun/wechatcmd.git
 cd wechatcmd/install/
 进入各自目录
 ```
