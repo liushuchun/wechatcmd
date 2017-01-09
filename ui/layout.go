@@ -244,7 +244,7 @@ func (l *Layout) displayMsgIn() {
 
 			appendToPar(l.msgInBox, text)
 
-			if msg.FromUserName == l.userIDList[l.userCur] {
+			if msg.FromUserName == l.userIDList[l.curPage*PageSize+l.userCur] {
 
 				appendToPar(l.chatBox, text)
 			}
