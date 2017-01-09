@@ -29,13 +29,13 @@ func (w *Wechat) GetContacts() (err error) {
 	for _, member := range w.MemberList {
 		w.MemberMap[member.UserName] = member
 		if member.UserName[:2] == "@@" {
-			w.GroupMemberList = append(w.GroupMemberList, member)
-			w.PublicUserList = append(w.PublicUserList, member) //公众号
+			w.GroupMemberList = append(w.GroupMemberList, member) //群聊
 
 		} else if member.VerifyFlag&8 != 0 {
 			w.PublicUserList = append(w.PublicUserList, member) //公众号
+		} else if member.UserName[:1] == "@" {
+			w.ContactList = append(w.ContactList, member)
 		}
-
 	}
 	mb := Member{}
 	mb.NickName = w.User.NickName

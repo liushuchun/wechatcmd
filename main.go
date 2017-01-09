@@ -104,6 +104,12 @@ func main() {
 		userIDList = append(userIDList, member.UserName)
 
 	}
+
+	for _, member := range wechat.ContactList {
+		nickNameList = append(nickNameList, member.NickName)
+		userIDList = append(userIDList, member.UserName)
+	}
+
 	for _, member := range wechat.PublicUserList {
 		nickNameList = append(nickNameList, member.NickName)
 		userIDList = append(userIDList, member.UserName)
