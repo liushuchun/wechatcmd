@@ -1,0 +1,22 @@
+hash: e994eb705e16c4c99a75268d95feb2922b5be99424f76173def5c8719a2945dd
+updated: 2017-01-09T16:57:40.389291459+08:00
+imports:
+- name: github.com/daviddengcn/go-colortext
+  version: 805cee6e0d43c72ba1d4e3275965ff41e0da068a
+- name: github.com/gizak/termui
+  version: bfde399a8caee62789593f2cbbda70feee4d5553
+- name: github.com/maruel/panicparse
+  version: ad661195ed0e88491e0f14be6613304e3b1141d6
+  subpackages:
+  - stack
+- name: github.com/mattn/go-runewidth
+  version: 737072b4e32b7a5018b4a7125da8d12de90e8045
+- name: github.com/mitchellh/go-wordwrap
+  version: ad45545899c7b13c020ea92b2072220eefad42b8
+- name: github.com/nsf/termbox-go
+  version: abe82ce5fb7a42fbd6784a5ceb71aff977e09ed8
+- name: github.com/skratchdot/open-golang
+  version: 75fb7ed4208cf72d323d7d02fd1a5964a7a9073c
+  subpackages:
+  - open
+testImports: []
