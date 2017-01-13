@@ -82,4 +82,9 @@ cd wechatcmd/install/
 - [ ] 自动保存消息到本地
 - [ ] 表情包的翻译
 
-
+### roadmap
+ -[ ]群内名字解析 @ Haiyang yu 2017-1-17
+ -[ ]自动回复消息修复 @liushuchun 2017-1-17
+ -[ ]添加表情解析 @liushuchun 2017-1-25
+ -[ ]自动添加好友功能 @liushuchun 2017-2-1
+ -[ ]好友、公众号分类 @Haiyang yu 2017-2-1
