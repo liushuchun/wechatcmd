@@ -56,7 +56,6 @@ cd wechatcmd/install/
 
 ![聊天动态图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/show.gif)
 
-![聊天界面](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-0.png)
 ![登陆后图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-1.png)
 ![聊天图片](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-2.png)
 
