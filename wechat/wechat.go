@@ -89,6 +89,7 @@ type Wechat struct {
 	AutoReply    bool     //是否自动回复
 	ReplyMsgs    []string // 回复的消息列表
 	AutoReplySrc bool     //默认false,自动回复，列表。true调用AI机器人。
+	lastCheckTs  time.Time
 }
 
 func NewWechat(logger *log.Logger) *Wechat {

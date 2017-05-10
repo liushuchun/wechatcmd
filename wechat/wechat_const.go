@@ -14,10 +14,22 @@ var (
 		"gh_22b87fa7cb3c", "officialaccounts", "notification_messages", "wxitil", "userexperience_alarm",
 	}
 
-
-
 	SyncHosts = []string{
+		"wx2.qq.com",
+		"webpush.wx2.qq.com",
+		"wx8.qq.com",
+		"webpush.wx8.qq.com",
+		"qq.com",
 		"webpush.wx.qq.com",
-        "webpush2.wx.qq.com",
+		"web2.wechat.com",
+		"webpush.web2.wechat.com",
+		"wechat.com",
+		"webpush.web.wechat.com",
+		"webpush.weixin.qq.com",
+		"webpush.wechat.com",
+		"webpush1.wechat.com",
+		"webpush2.wechat.com",
+		"webpush.wx.qq.com",
+		"webpush2.wx.qq.com",
 	}
 )

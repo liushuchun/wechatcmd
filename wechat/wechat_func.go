@@ -120,7 +120,7 @@ func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
 //同步守护goroutine
 func (w *Wechat) SyncDaemon(msgIn chan Message) {
 	for {
-
+		w.lastCheckTs = time.Now()
 		resp, err := w.SyncCheck()
 		if err != nil {
 			w.Log.Printf("w.SyncCheck() with error:%+v\n", err)
@@ -201,7 +201,10 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 						//获得一段小视频
 					case 10002:
 						//撤回一条消息
-
+					default:
+						msg := Message{}
+						msg.Content = fmt.Sprintf("未知消息：%s", m)
+						msgIn <- msg
 					}
 
 				}
@@ -220,7 +223,10 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 
 			continue
 		}
-		time.Sleep(time.Second * 4)
+
+		if time.Now().Sub(w.lastCheckTs).Seconds() <= 20 {
+			time.Sleep(time.Second * time.Duration(time.Now().Sub(w.lastCheckTs).Seconds()))
+		}
 
 	}
 }
