@@ -1,8 +1,0 @@
-package: github.com/liushuchun/wechatcmd
-import:
-- package: github.com/daviddengcn/go-colortext
-- package: github.com/gizak/termui
-  version: v2.1.1
-- package: github.com/skratchdot/open-golang
-  subpackages:
-  - open
