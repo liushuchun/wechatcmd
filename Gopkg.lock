@@ -14,8 +14,8 @@
   name = "github.com/gizak/termui"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bf53c5cbea3f372f745e1d8e4660e29f73d41517"
-  version = "v2.3.0"
+  revision = "24acd523c756fd9728824cdfac66aad9d8982fb7"
+  version = "v2.2.0"
 
 [[projects]]
   branch = "master"
