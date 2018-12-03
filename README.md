@@ -55,7 +55,7 @@ cd wechatcmd/install/
 ### 现在实现的界面：
 
 ![聊天动态图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/show.gif)
-
+出现二维码之后，使用微信扫描二维码，进行登录。
 ![登陆后图](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-1.png)
 ![聊天图片](https://raw.githubusercontent.com/liushuchun/wechatcmd/master/img/wechatcmd-2.png)
 
