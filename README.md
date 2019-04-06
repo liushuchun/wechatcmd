@@ -1,4 +1,4 @@
-# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/liushuchun/wechatcmd/fork) ![Build](https://camo.githubusercontent.com/46cb8b3469febc6cdb6fbaea2ef1517c396004e7/68747470733a2f2f7472617669732d63692e6f72672f736a77686974776f7274682f676f6c6561726e2e706e673f6272616e63683d6d6173746572)
+# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd/fork) ![Build](https://camo.githubusercontent.com/46cb8b3469febc6cdb6fbaea2ef1517c396004e7/68747470733a2f2f7472617669732d63692e6f72672f736a77686974776f7274682f676f6c6561726e2e706e673f6272616e63683d6d6173746572)
 =================
 ## 微信命令行版本
 开发这个命令行版本，一是为了熟悉微信的接口，二是方便咱们习惯命令行的同学。
@@ -44,12 +44,12 @@ cd wechatcmd/install/
 
 ### Mac安装
 
-	$ go get -u github.com/liushuchun/wechatcmd
+	$ go get -u github.com/hawklithm/wechatcmd
 
 
 ### Linux安装
 
-	$ go get -u github.com/liushuchun/wechatcmd
+	$ go get -u github.com/hawklithm/wechatcmd
 
 
 ### 现在实现的界面：

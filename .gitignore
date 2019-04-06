@@ -1,6 +1,10 @@
 /vendor
 /qr.jpg
 
+.idea
+
+wechatcmd
+
 *o
 *.a
 *.so

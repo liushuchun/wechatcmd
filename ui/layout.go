@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	ui "github.com/gizak/termui"
-	"github.com/liushuchun/wechatcmd/wechat"
+	"github.com/hawklithm/wechatcmd/wechat"
 )
 
 const (

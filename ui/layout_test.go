@@ -3,7 +3,7 @@ package ui
 import (
 	"flag"
 
-	"github.com/liushuchun/wechatcmd/wechat"
+	"github.com/hawklithm/wechatcmd/wechat"
 )
 
 func Test_UI() {
