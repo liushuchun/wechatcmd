@@ -19,7 +19,6 @@ type Layout struct {
 	msgInBox        *widgets.Paragraph //消息窗口
 	editBox         *widgets.Paragraph // 输入框
 	userNickListBox *widgets.List
-	userNickList    []string
 	userIDList      []string
 	curUserIndex    int
 	masterName      string // 主人的名字
@@ -60,14 +59,6 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		userMap[userIDList[i]] = userIDList[i]
 	}
 
-	offset := 45
-	if size < PageSize {
-		offset = size
-	}
-	showUserList := userNickList[0:offset]
-
-	showUserList[0] = AddBgColor(showUserList[0])
-
 	userNickListBox := widgets.NewList()
 	userNickListBox.Title = "用户列表"
 	//userNickListBox.BorderStyle = ui.NewStyle(ui.ColorMagenta)
@@ -77,8 +68,6 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 	userNickListBox.SelectedRowStyle = ui.NewStyle(ui.ColorWhite, ui.ColorRed)
 
 	width, height := ui.TerminalDimensions()
-
-	logger.Println("height=", height, "width=", width)
 
 	userNickListBox.SetRect(0, 0, width*2/10, height)
 
@@ -111,8 +100,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		pageCount++
 	}
 	l := &Layout{
-		userNickList:    userNickList,
-		showUserList:    showUserList,
+		showUserList:    userNickList,
 		userCur:         0,
 		curPage:         0,
 		msgInBox:        msgInBox,
@@ -146,7 +134,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		switch e.ID {
 		case "q", "<C-c>", "<C-d>":
 			return
-		case "<enter>":
+		case "<Enter>":
 			appendToPar(l.chatBox, l.masterName+"->"+DelBgColor(l.chatBox.
 				Title)+":"+l.editBox.Text+"\n")
 			l.logger.Println(l.editBox.Text)
@@ -164,7 +152,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 			l.NextUser()
 		case "<C-p>":
 			l.PrevUser()
-		case "<space>":
+		case "<Space>":
 			appendToPar(l.editBox, " ")
 		case "<C-8>":
 			if l.editBox.Text == "" {
@@ -178,32 +166,18 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 				setPar(l.editBox)
 			}
 		default:
-			if k, ok := e.Payload.(string); ok {
-				// chinese = false
-				// for _, r := range k.KeyStr {
-				// 	if unicode.Is(unicode.Scripts["Han"], r) {
-				// 		chinese = true
-				// 	}
-				// }
-				// if chinese && len(k.KeyStr) > 1 {
-				// 	runslice := []rune(k.KeyStr)
-
-				// 	temp := runslice[len(runslice)-1]
-				// 	runslice = runslice[0 : len(runslice)-1]
-				// 	runslice = append(runslice, temp)
-				// }
-
+			logger.Println("default event received, payload=", e.Payload,
+				"id=", e.ID, "type=", e.Type)
+			if e.Type == ui.KeyboardEvent {
+				k := e.ID
 				appendToPar(l.editBox, k)
 			} else if e.Type == ui.ResizeEvent {
-
+				logger.Println("resize event received, payload=", e.Payload,
+					"id=", e.ID)
 			}
 		}
 
 	}
-
-}
-
-func (l *Layout) Init() {
 
 }
 
@@ -221,7 +195,7 @@ func (l *Layout) displayMsgIn() {
 
 			appendToPar(l.msgInBox, text)
 
-			if msg.FromUserName == l.userIDList[l.curPage*PageSize+l.userCur] {
+			if msg.FromUserName == l.userIDList[l.userCur] {
 
 				appendToPar(l.chatBox, text)
 			}
@@ -251,7 +225,7 @@ func (l *Layout) NextUser() {
 func (l *Layout) SendText(text string) {
 	msg := wechat.MessageOut{}
 	msg.Content = text
-	msg.ToUserName = l.userIDList[l.curPage*PageSize+l.userCur]
+	msg.ToUserName = l.userIDList[l.userCur]
 	//appendToPar(l.msgInBox, fmt.Sprintf(text))
 
 	l.msgOut <- msg
