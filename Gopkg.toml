@@ -30,8 +30,8 @@
   version = "1.0.0"
 
 [[constraint]]
-  name = "github.com/gizak/termui"
-  version = "2.3.0"
+  name = "github.com/hawklithm/termui"
+  version = "3.0.0"
 
 [[constraint]]
   branch = "master"

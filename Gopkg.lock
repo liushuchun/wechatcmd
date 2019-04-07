@@ -2,6 +2,14 @@
 
 
 [[projects]]
+  digest = "1:6ba6d8f52a0ea509e0073b27b13858a7f396382f6eab5f97f7570eb49f3ba165"
+  name = "github.com/cjbassi/drawille-go"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "27dc511fe6fd820bf8537298e1d447b450210b28"
+  version = "v0.1.0"
+
+[[projects]]
   digest = "1:e921c3d4324ffdcb4fd39d5f47a832f2112d44731a5f21d8ae0ccfe82e608711"
   name = "github.com/daviddengcn/go-colortext"
   packages = ["."]
@@ -10,20 +18,12 @@
   version = "1.0.0"
 
 [[projects]]
-  digest = "1:0b98586be892040d424cdd4fb7e047f71ddfcdbfca59f975a4b4eb14b56ae33c"
+  digest = "1:c93aac3fc022d987df6f884760767bd7222bfb9c7203de2a1f4ab7e2e46c3a50"
   name = "github.com/gizak/termui"
   packages = ["."]
   pruneopts = "UT"
-  revision = "bf53c5cbea3f372f745e1d8e4660e29f73d41517"
-  version = "v2.3.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:2eeeebccad4f052e6037527e86b8114c6bfd184a97f84d4449a5ea6ad202c216"
-  name = "github.com/maruel/panicparse"
-  packages = ["stack"]
-  pruneopts = "UT"
-  revision = "f20d4c4d746f810c9110e21928d4135e1f2a3efa"
+  revision = "70fa7b8887822d93439f585dc397004f2d678a8d"
+  version = "v3.0.0"
 
 [[projects]]
   digest = "1:0356f3312c9bd1cbeda81505b7fd437501d8e778ab66998ef69f00d7f9b3a0d7"
@@ -34,12 +34,12 @@
   version = "v0.0.4"
 
 [[projects]]
-  branch = "master"
   digest = "1:abf08734a6527df70ed361d7c369fb580e6840d8f7a6012e5f609fdfd93b4e48"
   name = "github.com/mitchellh/go-wordwrap"
   packages = ["."]
   pruneopts = "UT"
   revision = "9e67c67572bc5dd02aef930e2b0ae3c02a4b5a5c"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"

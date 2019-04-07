@@ -4,7 +4,8 @@ import (
 	"log"
 	"strings"
 
-	ui "github.com/gizak/termui"
+	ui "github.com/hawklithm/termui"
+	"github.com/hawklithm/termui/widgets"
 	"github.com/hawklithm/wechatcmd/wechat"
 )
 
@@ -59,31 +60,32 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 
 	showUserList[0] = AddBgColor(showUserList[0])
 
-	userNickListBox := ui.NewList()
-	userNickListBox.BorderLabel = "用户列表"
-	userNickListBox.BorderFg = ui.ColorMagenta
-	userNickListBox.X = 0
-	userNickListBox.Y = 0
+	userNickListBox := widgets.NewList()
+	userNickListBox.Title = "用户列表"
+	userNickListBox.BorderStyle = ui.NewStyle(ui.ColorMagenta)
+	userNickListBox.Border = true
 
-	userNickListBox.Items = showUserList
-	userNickListBox.ItemFgColor = ui.ColorGreen
+	height, width := ui.TerminalDimensions()
 
-	chatBox := ui.NewPar("")
-	chatBox.X = 20
-	chatBox.Y = 0
+	userNickListBox.SetRect(0, 0, width*2/10, height)
 
-	chatBox.TextFgColor = ui.ColorRed
-	chatBox.BorderLabel = "to:" + userNickList[0]
-	chatBox.BorderFg = ui.ColorMagenta
+	userNickListBox.Rows = showUserList
 
-	msgInBox := ui.NewPar("")
-	msgInBox.X = 60
-	msgInBox.Y = 0
+	chatBox := widgets.NewParagraph()
+	chatBox.SetRect(width*2/10, 0, width*6/10, height*8/10)
 
-	msgInBox.TextFgColor = ui.ColorWhite
-	msgInBox.BorderLabel = "消息窗"
-	msgInBox.BorderFg = ui.ColorCyan
-	msgInBox.TextFgColor = ui.ColorRGB(180, 180, 90)
+	chatBox.TextStyle = ui.NewStyle(ui.ColorRed)
+	chatBox.Text = "to:" + userNickList[0]
+	chatBox.BorderStyle = ui.NewStyle(ui.ColorMagenta)
+
+	msgInBox := widgets.NewParagraph()
+
+	msgInBox.SetRect(width*6/10, 0, width*4/10, height*8/10)
+
+	msgInBox.TextStyle = ui.NewStyle(ui.ColorWhite)
+	msgInBox.Text = "消息窗"
+	msgInBox.BorderStyle = ui.NewStyle(ui.ColorCyan)
+	msgInBox.TextStyle = ui.ColorRGB(180, 180, 90)
 
 	editBox := ui.NewPar("")
 	editBox.X = 20
@@ -131,17 +133,17 @@ func (l *Layout) Init() {
 	defer ui.Close()
 	ui.ThemeAttr("helloworld")
 
-	height := ui.TermHeight()
-	width := ui.TermWidth()
-	l.userNickListBox.SetWidth(width * 2 / 10)
-	l.userNickListBox.Height = height
-	l.msgInBox.SetWidth(width * 4 / 10)
-	l.msgInBox.SetX(width * 6 / 10)
-	l.msgInBox.Height = height * 8 / 10
+	//height := ui.TermHeight()
+	//width := ui.TermWidth()
+	//l.userNickListBox.SetWidth(width * 2 / 10)
+	//l.userNickListBox.Height = height
+	//l.msgInBox.SetWidth(width * 4 / 10)
+	//l.msgInBox.SetX(width * 6 / 10)
+	//l.msgInBox.Height = height * 8 / 10
 
-	l.chatBox.SetX(width * 2 / 10)
-	l.chatBox.Height = height * 8 / 10
-	l.chatBox.SetWidth(width * 4 / 10)
+	//l.chatBox.SetX(width * 2 / 10)
+	//l.chatBox.Height = height * 8 / 10
+	//l.chatBox.SetWidth(width * 4 / 10)
 
 	l.editBox.SetX(width * 2 / 10)
 	l.editBox.SetY(height * 8 / 10)
