@@ -70,16 +70,19 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 
 	userNickListBox := widgets.NewList()
 	userNickListBox.Title = "用户列表"
-	userNickListBox.BorderStyle = ui.NewStyle(ui.ColorMagenta)
-	userNickListBox.Border = true
+	//userNickListBox.BorderStyle = ui.NewStyle(ui.ColorMagenta)
+	//userNickListBox.Border = true
+	userNickListBox.TextStyle = ui.NewStyle(ui.ColorYellow)
+	userNickListBox.WrapText = false
+	userNickListBox.SelectedRowStyle = ui.NewStyle(ui.ColorWhite, ui.ColorRed)
 
-	height, width := ui.TerminalDimensions()
+	width, height := ui.TerminalDimensions()
 
 	logger.Println("height=", height, "width=", width)
 
 	userNickListBox.SetRect(0, 0, width*2/10, height)
 
-	userNickListBox.Rows = showUserList
+	userNickListBox.Rows = userNickList
 
 	chatBox := widgets.NewParagraph()
 	chatBox.SetRect(width*2/10, 0, width*6/10, height*8/10)
@@ -232,74 +235,17 @@ func (l *Layout) displayMsgIn() {
 }
 
 func (l *Layout) PrevUser() {
-	if l.userCur-1 < 0 { //如果是第一行
-		if l.curPage > 0 { //如果不是第一页
-			l.userCur = PageSize - 1
-			l.curPage-- //到上一页
-			//刷新一下显示的内容
-			l.showUserList = l.userNickList[l.curPage*l.pageSize : l.curPage*l.pageSize+l.pageSize]
-		} else {
-			//如果是第一页
-			//跳转到最后一页
-
-			l.userCur = (l.userCount % l.pageSize) - 1
-			if l.userCur < 0 {
-				l.userCur = l.pageSize - 1
-			}
-			l.curPage = l.pageCount - 1
-			l.showUserList = l.userNickList[l.curPage*l.pageSize : l.userCount]
-
-		}
-		l.showUserList[l.userCur] = AddBgColor(l.showUserList[l.userCur])
-		l.userNickListBox.Rows = l.showUserList
-
-	} else { //不是第一行，则删掉前面一行的信息，更新上一个的信息。
-		l.userNickListBox.Rows[l.userCur] = DelBgColor(l.userNickListBox.
-			Rows[l.userCur])
-		l.userCur--
-		l.userNickListBox.Rows[l.userCur] = AddBgColor(l.userNickListBox.
-			Rows[l.userCur])
-
-	}
-	l.chatBox.Title = DelBgColor(l.showUserList[l.userCur])
+	l.userNickListBox.ScrollUp()
+	l.userCur = l.userNickListBox.SelectedRow
+	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
 	ui.Render(l.userNickListBox, l.chatBox)
-
 }
 
 func (l *Layout) NextUser() {
-	if l.userCur+1 >= l.pageSize || l.userCur+1 >= len(l.showUserList) { //跳出了对应的下标
-		l.userNickListBox.Rows[l.userCur] = DelBgColor(l.userNickListBox.
-			Rows[l.userCur])
-
-		l.userCur = 0
-		l.userNickListBox.Rows[l.userCur] = AddBgColor(l.userNickListBox.
-			Rows[l.userCur])
-
-		if l.curPage+1 >= l.pageCount { //当前页是最后一页了
-			l.curPage = 0
-		} else {
-			l.curPage++
-		}
-
-		if l.curPage == l.pageCount-1 { //最后一页，判断情况
-			l.showUserList = l.userNickList[l.curPage*l.pageSize : l.userCount]
-		} else {
-			l.showUserList = l.userNickList[l.curPage*l.pageSize : l.curPage*l.pageSize+l.pageSize]
-		}
-		//设定第一行是背景色
-		l.showUserList[0] = AddBgColor(l.showUserList[0])
-		l.userNickListBox.Rows = l.showUserList
-	} else {
-		l.userNickListBox.Rows[l.userCur] = DelBgColor(l.userNickListBox.
-			Rows[l.userCur])
-		l.userCur++
-		l.userNickListBox.Rows[l.userCur] = AddBgColor(l.userNickListBox.
-			Rows[l.userCur])
-	}
-	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userCur])
-
+	l.userNickListBox.ScrollDown()
+	l.userCur = l.userNickListBox.SelectedRow
+	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
 	ui.Render(l.userNickListBox, l.chatBox)
-
 }
 
 func (l *Layout) SendText(text string) {
