@@ -120,12 +120,10 @@ func main() {
 	msgOut := make(chan chat.MessageOut, maxChanSize)
 	closeChan := make(chan int, 1)
 	autoChan := make(chan int, 1)
-	layout := ui.NewLayout(nickNameList, userIDList, wechat.User.NickName, wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
 
 	go wechat.SyncDaemon(msgIn)
 
 	go wechat.MsgDaemon(msgOut, autoChan)
-
-	layout.Init()
+	ui.NewLayout(nickNameList, userIDList, wechat.User.NickName, wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
 
 }
