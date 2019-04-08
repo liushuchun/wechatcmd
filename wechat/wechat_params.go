@@ -19,6 +19,13 @@ type MessageOut struct {
 	Type       int
 }
 
+type MessageRecord struct {
+	From    string
+	To      string
+	Content string
+	Type    int
+}
+
 type Message struct {
 	FromUserName         string
 	PlayLength           int
@@ -276,4 +283,20 @@ func createFile(name string, data []byte, isAppend bool) (err error) {
 
 	_, err = file.Write(data)
 	return
+}
+
+func NewMessageRecordOut(from string, message MessageOut) *MessageRecord {
+	return &MessageRecord{
+		From:    from,
+		To:      message.ToUserName,
+		Content: message.Content,
+	}
+}
+
+func NewMessageRecordIn(message Message) *MessageRecord {
+	return &MessageRecord{
+		From:    message.FromUserName,
+		To:      message.ToUserName,
+		Content: message.Content,
+	}
 }

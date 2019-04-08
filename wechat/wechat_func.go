@@ -30,7 +30,7 @@ func (w *Wechat) GetContacts() (err error) {
 		w.MemberMap[member.UserName] = member
 		if member.UserName[:2] == "@@" {
 			w.GroupMemberList = append(w.GroupMemberList, member) //群聊
-
+			w.Log.Println("member info=", member)
 		} else if member.VerifyFlag&8 != 0 {
 			w.PublicUserList = append(w.PublicUserList, member) //公众号
 		} else if member.UserName[:1] == "@" {
@@ -210,8 +210,8 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 				}
 			case 4: //通讯录更新
 				w.GetContacts()
-			case 6: //可能是红包
-				w.Log.Println("请速去手机抢红包")
+			//case 6: //可能是红包
+			//	w.Log.Println("请速去手机抢红包")
 			case 7:
 				w.Log.Println("在手机上操作了微信")
 			case 0:

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"log"
 	"strings"
 
@@ -39,6 +40,7 @@ type Layout struct {
 	curUserId       string
 	userMap         map[string]string
 	logger          *log.Logger
+	userChatLog     map[string][]*wechat.MessageRecord
 }
 
 func NewLayout(userNickList []string, userIDList []string, myName, myID string, msgIn chan wechat.Message, msgOut chan wechat.MessageOut, closeChan, autoReply chan int, logger *log.Logger) {
@@ -52,6 +54,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 
 	//用户列表框
 	userMap := make(map[string]string)
+	userChatLog := make(map[string][]*wechat.MessageRecord)
 
 	size := len(userNickList)
 
@@ -121,6 +124,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		masterID:        myID,
 		masterName:      myName,
 		logger:          logger,
+		userChatLog:     userChatLog,
 	}
 
 	go l.displayMsgIn()
@@ -166,8 +170,8 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 				setPar(l.editBox)
 			}
 		default:
-			logger.Println("default event received, payload=", e.Payload,
-				"id=", e.ID, "type=", e.Type)
+			//logger.Println("default event received, payload=", e.Payload,
+			//	"id=", e.ID, "type=", e.Type)
 			if e.Type == ui.KeyboardEvent {
 				k := e.ID
 				appendToPar(l.editBox, k)
@@ -193,6 +197,17 @@ func (l *Layout) displayMsgIn() {
 
 			text := msg.String()
 
+			if l.userChatLog[msg.FromUserName] == nil {
+				l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
+			}
+
+			l.userChatLog[msg.FromUserName] = append(l.userChatLog[msg.
+				FromUserName],
+				wechat.NewMessageRecordIn(msg))
+
+			l.logger.Println("message receive, from=", msg.FromUserName, "to=",
+				msg.ToUserName, "content=", msg.Content)
+
 			appendToPar(l.msgInBox, text)
 
 			if msg.FromUserName == l.userIDList[l.userCur] {
@@ -212,6 +227,9 @@ func (l *Layout) PrevUser() {
 	l.userNickListBox.ScrollUp()
 	l.userCur = l.userNickListBox.SelectedRow
 	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
+	l.logger.Println("title=", l.chatBox.Title, "content=",
+		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	ui.Render(l.userNickListBox, l.chatBox)
 }
 
@@ -219,6 +237,9 @@ func (l *Layout) NextUser() {
 	l.userNickListBox.ScrollDown()
 	l.userCur = l.userNickListBox.SelectedRow
 	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
+	l.logger.Println("title=", l.chatBox.Title, "content=",
+		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	ui.Render(l.userNickListBox, l.chatBox)
 }
 
@@ -227,6 +248,14 @@ func (l *Layout) SendText(text string) {
 	msg.Content = text
 	msg.ToUserName = l.userIDList[l.userCur]
 	//appendToPar(l.msgInBox, fmt.Sprintf(text))
+
+	if l.userChatLog[msg.ToUserName] == nil {
+		l.userChatLog[msg.ToUserName] = []*wechat.MessageRecord{}
+	}
+
+	l.userChatLog[msg.ToUserName] = append(l.userChatLog[msg.ToUserName],
+		wechat.NewMessageRecordOut(l.masterName,
+			msg))
 
 	l.msgOut <- msg
 }
@@ -260,4 +289,12 @@ func resetPar(p *widgets.Paragraph) {
 
 func setPar(p *widgets.Paragraph) {
 	ui.Render(p)
+}
+
+func convertChatLogToText(records []*wechat.MessageRecord) string {
+	var b strings.Builder
+	for _, i := range records {
+		_, _ = fmt.Fprint(&b, i.From+"->"+i.To+": "+i.Content+"\n")
+	}
+	return b.String()
 }
