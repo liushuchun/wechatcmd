@@ -59,8 +59,9 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 	size := len(userNickList)
 
 	for i := 0; i < size; i++ {
-		userMap[userIDList[i]] = userIDList[i]
+		userMap[userIDList[i]] = userNickList[i]
 	}
+	userMap[myID] = myName
 
 	userNickListBox := widgets.NewList()
 	userNickListBox.Title = "用户列表"
@@ -158,7 +159,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 			l.PrevUser()
 		case "<Space>":
 			appendToPar(l.editBox, " ")
-		case "<C-8>":
+		case "<Backspace>":
 			if l.editBox.Text == "" {
 				return
 			}
@@ -197,13 +198,11 @@ func (l *Layout) displayMsgIn() {
 
 			text := msg.String()
 
-			if l.userChatLog[msg.FromUserName] == nil {
-				l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
+			if l.masterID == msg.FromUserName {
+				l.apendOut(wechat.MessageOut{ToUserName: msg.ToUserName, Content: msg.Content, Type: msg.MsgType})
+			} else {
+				l.apendIn(msg)
 			}
-
-			l.userChatLog[msg.FromUserName] = append(l.userChatLog[msg.
-				FromUserName],
-				wechat.NewMessageRecordIn(msg))
 
 			l.logger.Println("message receive, from=", msg.FromUserName, "to=",
 				msg.ToUserName, "content=", msg.Content)
@@ -249,15 +248,48 @@ func (l *Layout) SendText(text string) {
 	msg.ToUserName = l.userIDList[l.userCur]
 	//appendToPar(l.msgInBox, fmt.Sprintf(text))
 
+	l.apendOut(msg)
+
+	l.msgOut <- msg
+}
+
+func (l *Layout) apendOut(msg wechat.MessageOut) {
 	if l.userChatLog[msg.ToUserName] == nil {
 		l.userChatLog[msg.ToUserName] = []*wechat.MessageRecord{}
 	}
 
-	l.userChatLog[msg.ToUserName] = append(l.userChatLog[msg.ToUserName],
-		wechat.NewMessageRecordOut(l.masterName,
-			msg))
+	newMsg := wechat.NewMessageRecordOut(l.masterID,
+		msg)
+	if l.userMap[newMsg.To] != "" {
+		newMsg.To = l.userMap[newMsg.To]
+	}
 
-	l.msgOut <- msg
+	if l.userMap[newMsg.From] != "" {
+		newMsg.From = l.userMap[newMsg.From]
+	}
+
+	l.userChatLog[msg.ToUserName] = append(l.userChatLog[msg.ToUserName],
+		newMsg)
+}
+
+func (l *Layout) apendIn(msg wechat.Message) {
+	if l.userChatLog[msg.FromUserName] == nil {
+		l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
+	}
+
+	newMsg := wechat.NewMessageRecordIn(msg)
+
+	if l.userMap[newMsg.To] != "" {
+		newMsg.To = l.userMap[newMsg.To]
+	}
+
+	if l.userMap[newMsg.From] != "" {
+		newMsg.From = l.userMap[newMsg.From]
+	}
+
+	l.userChatLog[msg.FromUserName] = append(l.userChatLog[msg.
+		FromUserName], newMsg)
+
 }
 
 func AddBgColor(msg string) string {
