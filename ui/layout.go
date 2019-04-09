@@ -41,9 +41,12 @@ type Layout struct {
 	userMap         map[string]string
 	logger          *log.Logger
 	userChatLog     map[string][]*wechat.MessageRecord
+	groupMemberMap  map[string]map[string]string
 }
 
-func NewLayout(userNickList []string, userIDList []string, myName, myID string, msgIn chan wechat.Message, msgOut chan wechat.MessageOut, closeChan, autoReply chan int, logger *log.Logger) {
+func NewLayout(userNickList []string, userIDList []string,
+	groupMemberList []wechat.Member, myName, myID string,
+	msgIn chan wechat.Message, msgOut chan wechat.MessageOut, closeChan, autoReply chan int, logger *log.Logger) {
 
 	//	chinese := false
 	err := ui.Init()
@@ -55,6 +58,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 	//用户列表框
 	userMap := make(map[string]string)
 	userChatLog := make(map[string][]*wechat.MessageRecord)
+	groupMemberMap := make(map[string]map[string]string)
 
 	size := len(userNickList)
 
@@ -62,6 +66,15 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		userMap[userIDList[i]] = userNickList[i]
 	}
 	userMap[myID] = myName
+
+	for _, m := range groupMemberList {
+		if groupMemberMap[m.UserName] == nil {
+			groupMemberMap[m.UserName] = make(map[string]string)
+		}
+		for _, user := range m.MemberList {
+			groupMemberMap[m.UserName][user.UserName] = user.NickName
+		}
+	}
 
 	userNickListBox := widgets.NewList()
 	userNickListBox.Title = "用户列表"
@@ -126,6 +139,7 @@ func NewLayout(userNickList []string, userIDList []string, myName, myID string, 
 		masterName:      myName,
 		logger:          logger,
 		userChatLog:     userChatLog,
+		groupMemberMap:  groupMemberMap,
 	}
 
 	go l.displayMsgIn()
@@ -260,6 +274,12 @@ func (l *Layout) apendOut(msg wechat.MessageOut) {
 
 	newMsg := wechat.NewMessageRecordOut(l.masterID,
 		msg)
+
+	if l.groupMemberMap[newMsg.From] != nil {
+		newMsg.Content = l.getUserIdFromContent(newMsg.Content,
+			l.groupMemberMap[newMsg.From])
+	}
+
 	if l.userMap[newMsg.To] != "" {
 		newMsg.To = l.userMap[newMsg.To]
 	}
@@ -272,12 +292,31 @@ func (l *Layout) apendOut(msg wechat.MessageOut) {
 		newMsg)
 }
 
+func (l *Layout) getUserIdFromContent(content string,
+	userMap map[string]string) string {
+	s := strings.Split(content, ":")
+	if len(s) > 0 && userMap[s[0]] != "" {
+		s[0] = userMap[s[0]]
+	}
+	l.logger.Println("groupMap=", userMap, "s=", s)
+	builder := strings.Builder{}
+	for _, sub := range s {
+		builder.WriteString(sub)
+	}
+	return builder.String()
+}
+
 func (l *Layout) apendIn(msg wechat.Message) {
 	if l.userChatLog[msg.FromUserName] == nil {
 		l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
 	}
 
 	newMsg := wechat.NewMessageRecordIn(msg)
+
+	if l.groupMemberMap[newMsg.From] != nil {
+		newMsg.Content = l.getUserIdFromContent(newMsg.Content,
+			l.groupMemberMap[newMsg.From])
+	}
 
 	if l.userMap[newMsg.To] != "" {
 		newMsg.To = l.userMap[newMsg.To]

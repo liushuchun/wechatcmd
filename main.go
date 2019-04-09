@@ -7,8 +7,9 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 
-	ct "github.com/daviddengcn/go-colortext"
+	"github.com/daviddengcn/go-colortext"
 	"github.com/hawklithm/wechatcmd/ui"
 	chat "github.com/hawklithm/wechatcmd/wechat"
 )
@@ -115,6 +116,19 @@ func main() {
 		userIDList = append(userIDList, member.UserName)
 
 	}
+	groupIdList := []string{}
+	for _, user := range userIDList {
+		if strings.HasPrefix(user, "@@") {
+			groupIdList = append(groupIdList, user)
+		}
+	}
+
+	//群成员列表
+	groupMemberList, err := wechat.GetContactsInBatch(groupIdList)
+	if err != nil {
+		logger.Fatal("get batch contact error=", err)
+		return
+	}
 
 	msgIn := make(chan chat.Message, maxChanSize)
 	msgOut := make(chan chat.MessageOut, maxChanSize)
@@ -124,6 +138,8 @@ func main() {
 	go wechat.SyncDaemon(msgIn)
 
 	go wechat.MsgDaemon(msgOut, autoChan)
-	ui.NewLayout(nickNameList, userIDList, wechat.User.NickName, wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
+	ui.NewLayout(nickNameList, userIDList, groupMemberList,
+		wechat.User.NickName,
+		wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
 
 }

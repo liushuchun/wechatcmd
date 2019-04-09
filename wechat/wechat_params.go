@@ -136,6 +136,11 @@ type SyncKey struct {
 	List  []KeyVal `json:"List"`
 }
 
+type UserNameSubParam struct {
+	UserName        string `json:"UserName"`
+	EncryChatRoomId string `json:"EncryChatRoomId"`
+}
+
 type KeyVal struct {
 	Key int `json:"Key"`
 	Val int `json:"Val"`
@@ -247,6 +252,12 @@ type SyncParams struct {
 	RR          int64       `json:"rr"`
 }
 
+type BatchContactParam struct {
+	BaseRequest BaseRequest        `json:"BaseRequest"`
+	List        []UserNameSubParam `json:"List"`
+	Count       int                `json:"Count"`
+}
+
 type SyncResp struct {
 	Response
 	SyncKey      SyncKey       `json:"SyncKey"`
@@ -257,6 +268,12 @@ type SyncResp struct {
 type NotifyResp struct {
 	Response
 	MsgID string
+}
+
+type BatchContactResp struct {
+	Response
+	Count       int
+	ContactList []Member
 }
 
 func NewGetUUIDParams(appid, fun, lang string, times float64) *GetUUIDParams {
