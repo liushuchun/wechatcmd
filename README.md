@@ -1,4 +1,50 @@
-# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=liushuchun&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd/fork) ![Build](https://camo.githubusercontent.com/46cb8b3469febc6cdb6fbaea2ef1517c396004e7/68747470733a2f2f7472617669732d63692e6f72672f736a77686974776f7274682f676f6c6561726e2e706e673f6272616e63683d6d6173746572)
+# wechatcmd  [![star this repo](http://github-svg-buttons.herokuapp.com/star.svg?user=hawklithm&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd) [![fork this repo](http://github-svg-buttons.herokuapp.com/fork.svg?user=hawklithm&repo=wechatcmd&style=flat&background=1081C1)](http://github.com/hawklithm/wechatcmd/fork) ![Build](https://camo.githubusercontent.com/46cb8b3469febc6cdb6fbaea2ef1517c396004e7/68747470733a2f2f7472617669732d63692e6f72672f736a77686974776f7274682f676f6c6561726e2e706e673f6272616e63683d6d6173746572)
+
+公司出于安全性考虑不允许安装pc版wechat，网页版在使用上并不令人满意，在一番调研之后决定采用 
+[liushuchun/wechatcmd](https://github.com/liushuchun/wechatcmd)
+，在阅读了源码并了解到原作者已放弃继续开发，遂决定fork一份之后在此基础上继续进行开发，完善其功能
+
+目前已完善点：
+
+- [x] termui版本升级到3.0.0，接口兼容问题修复
+- [x] 群聊天中发言人显示
+- [x] 用户多端登陆时，通过其他端发出的消息的同步
+- [x] 切换当前聊天窗口时，历史聊天记录的恢复
+- [x] 干掉了红包提醒(逻辑存在bug，误提醒，让人很烦躁，所以删掉了)
+
+**注：本程序目的为日常使用替代pc端微信，所以不会开发自动回复或者聊天机器人抑或是群发之类的功能**
+
+
+操作方式：
+
+| 按键 | 说明 |
+| --- | --- |
+| Ctrl+n | 下一个聊天 |
+| Ctrl+p | 上一个聊天 |
+| q/Ctrl+c | 退出 |
+
+开发计划：
+
+- [x] 实现微信登陆(原版已实现)
+- [x] 实现微信认证(原版已实现)
+- [x] 实现拉取用户信息(原版已实现)
+- [x] 同步消息
+- [x] 自动更新消息
+- [x] 聊天
+- [x] 群聊
+- [ ] 读取图片
+- [ ] 自动保存消息到本地
+- [ ] 消息提醒
+- [ ] 表情包
+- [ ] 本地表情包发送(发图片)
+- [ ] 解析分享消息
+- [ ] 解析公众号消息
+
+
+
+
+
+以下是原版的README
 =================
 ## 微信命令行版本
 开发这个命令行版本，一是为了熟悉微信的接口，二是方便咱们习惯命令行的同学。
