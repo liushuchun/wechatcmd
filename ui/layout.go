@@ -99,7 +99,7 @@ func NewLayout(userNickList []string, userIDList []string,
 
 	msgInBox := widgets.NewParagraph()
 
-	msgInBox.SetRect(width*6/10, 0, width*4/10, height*8/10)
+	msgInBox.SetRect(width*6/10, 0, width, height*8/10)
 
 	msgInBox.TextStyle = ui.NewStyle(ui.ColorWhite)
 	msgInBox.Title = "消息窗"
@@ -174,15 +174,14 @@ func NewLayout(userNickList []string, userIDList []string,
 		case "<Space>":
 			appendToPar(l.editBox, " ")
 		case "<Backspace>":
-			if l.editBox.Text == "" {
-				return
-			}
-			runslice := []rune(l.editBox.Text)
-			if len(runslice) == 0 {
-				return
-			} else {
-				l.editBox.Text = string(runslice[0 : len(runslice)-1])
-				setPar(l.editBox)
+			if l.editBox.Text != "" {
+				runslice := []rune(l.editBox.Text)
+				if len(runslice) == 0 {
+					return
+				} else {
+					l.editBox.Text = string(runslice[0 : len(runslice)-1])
+					setPar(l.editBox)
+				}
 			}
 		default:
 			//logger.Println("default event received, payload=", e.Payload,
