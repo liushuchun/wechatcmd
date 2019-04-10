@@ -299,8 +299,11 @@ func (l *Layout) getUserIdFromContent(content string,
 	}
 	l.logger.Println("groupMap=", userMap, "s=", s)
 	builder := strings.Builder{}
-	for _, sub := range s {
+	for i, sub := range s {
 		builder.WriteString(sub)
+		if i != len(s)-1 {
+			builder.WriteString(":")
+		}
 	}
 	return builder.String()
 }
