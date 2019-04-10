@@ -30,7 +30,7 @@ func (w *Wechat) GetContacts() (err error) {
 		w.MemberMap[member.UserName] = member
 		if member.UserName[:2] == "@@" {
 			w.GroupMemberList = append(w.GroupMemberList, member) //群聊
-
+			w.Log.Println("member info=", member)
 		} else if member.VerifyFlag&8 != 0 {
 			w.PublicUserList = append(w.PublicUserList, member) //公众号
 		} else if member.UserName[:1] == "@" {
@@ -210,8 +210,8 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 				}
 			case 4: //通讯录更新
 				w.GetContacts()
-			case 6: //可能是红包
-				w.Log.Println("请速去手机抢红包")
+			//case 6: //可能是红包
+			//	w.Log.Println("请速去手机抢红包")
 			case 7:
 				w.Log.Println("在手机上操作了微信")
 			case 0:
@@ -258,7 +258,7 @@ func (w *Wechat) StatusNotify() (err error) {
 		Code:         3,
 		FromUserName: w.User.UserName,
 		ToUserName:   w.User.UserName,
-		ClientMsgId:  w.GetUnixTime(),
+		ClientMsgId:  w.GetUnixTimeInt(),
 	})
 
 	if err := w.Send(statusURL, bytes.NewReader(data), resp); err != nil {
@@ -268,13 +268,35 @@ func (w *Wechat) StatusNotify() (err error) {
 	return
 }
 
-func (w *Wechat) GetContactsInBatch() (err error) {
-	resp := new(MemberResp)
-	apiUrl := fmt.Sprintf("https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact?type=ex&r=%s&pass_ticket=%s", w.GetUnixTime(), w.Request.PassTicket)
-	if err := w.Send(apiUrl, nil, resp); err != nil {
-		return err
+func (w *Wechat) GetContactsInBatch(memberNames []string) (member []Member, err error) {
+	resp := new(BatchContactResp)
+	apiUrl := fmt.Sprintf("%s/webwxbatchgetcontact?type=ex&r=%s&pass_ticket"+
+		"=%s", w.BaseUri, w.GetUnixTime(), w.Request.PassTicket)
+
+	params := BatchContactParam{
+		BaseRequest: *w.Request,
 	}
-	return
+
+	params.Count = len(memberNames)
+	var listObject []UserNameSubParam
+	for _, memberName := range memberNames {
+		sub := UserNameSubParam{
+			UserName:        memberName,
+			EncryChatRoomId: "",
+		}
+		listObject = append(listObject, sub)
+	}
+	params.List = listObject
+	data, err := json.Marshal(params)
+	if err != nil {
+		panic(err)
+		return nil, err
+	}
+	if err := w.Send(apiUrl, bytes.NewReader(data), resp); err != nil {
+		panic(err)
+		return nil, err
+	}
+	return resp.ContactList, nil
 }
 
 func (w *Wechat) TestCheck() (err error) {
@@ -337,7 +359,7 @@ func (w *Wechat) SendMsg(toUserName, message string, isFile bool) (err error) {
 	resp := new(MsgResp)
 
 	apiUrl := fmt.Sprintf("%s/webwxsendmsg?pass_ticket=%s", w.BaseUri, w.Request.PassTicket)
-	clientMsgId := strconv.Itoa(w.GetUnixTime()) + "0" + strconv.Itoa(rand.Int())[3:6]
+	clientMsgId := w.GetUnixTime() + "0" + strconv.Itoa(rand.Int())[3:6]
 	params := make(map[string]interface{})
 	params["BaseRequest"] = w.BaseRequest
 	msg := make(map[string]interface{})
@@ -497,6 +519,10 @@ func (w *Wechat) SetCookies() {
 
 }
 
-func (w *Wechat) GetUnixTime() int {
+func (w *Wechat) GetUnixTime() string {
+	return strconv.Itoa(int(time.Now().Unix()))
+}
+
+func (w *Wechat) GetUnixTimeInt() int {
 	return int(time.Now().Unix())
 }

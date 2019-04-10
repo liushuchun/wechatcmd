@@ -19,6 +19,17 @@ type MessageOut struct {
 	Type       int
 }
 
+type MessageRecord struct {
+	From    string
+	To      string
+	Content string
+	Type    int
+}
+
+func (m *MessageRecord) String() string {
+	return m.From + "->" + m.To + ": " + m.Content
+}
+
 type Message struct {
 	FromUserName         string
 	PlayLength           int
@@ -127,6 +138,11 @@ type InitResp struct {
 type SyncKey struct {
 	Count int      `json:"Count"`
 	List  []KeyVal `json:"List"`
+}
+
+type UserNameSubParam struct {
+	UserName        string `json:"UserName"`
+	EncryChatRoomId string `json:"EncryChatRoomId"`
 }
 
 type KeyVal struct {
@@ -240,6 +256,12 @@ type SyncParams struct {
 	RR          int64       `json:"rr"`
 }
 
+type BatchContactParam struct {
+	BaseRequest BaseRequest        `json:"BaseRequest"`
+	List        []UserNameSubParam `json:"List"`
+	Count       int                `json:"Count"`
+}
+
 type SyncResp struct {
 	Response
 	SyncKey      SyncKey       `json:"SyncKey"`
@@ -250,6 +272,12 @@ type SyncResp struct {
 type NotifyResp struct {
 	Response
 	MsgID string
+}
+
+type BatchContactResp struct {
+	Response
+	Count       int
+	ContactList []Member
 }
 
 func NewGetUUIDParams(appid, fun, lang string, times float64) *GetUUIDParams {
@@ -276,4 +304,20 @@ func createFile(name string, data []byte, isAppend bool) (err error) {
 
 	_, err = file.Write(data)
 	return
+}
+
+func NewMessageRecordOut(from string, message MessageOut) *MessageRecord {
+	return &MessageRecord{
+		From:    from,
+		To:      message.ToUserName,
+		Content: message.Content,
+	}
+}
+
+func NewMessageRecordIn(message Message) *MessageRecord {
+	return &MessageRecord{
+		From:    message.FromUserName,
+		To:      message.ToUserName,
+		Content: message.Content,
+	}
 }

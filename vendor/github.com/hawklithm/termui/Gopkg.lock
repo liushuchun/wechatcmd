@@ -10,25 +10,6 @@
   version = "v0.1.0"
 
 [[projects]]
-  digest = "1:e921c3d4324ffdcb4fd39d5f47a832f2112d44731a5f21d8ae0ccfe82e608711"
-  name = "github.com/daviddengcn/go-colortext"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "17e75f6184bc9e727756cd0d82e0af58b1fc7191"
-  version = "1.0.0"
-
-[[projects]]
-  branch = "master"
-  digest = "1:c00a92be51a71a5b96c61980878b15ce3c013d9e8a168e819bb8aa2c60f9d6a1"
-  name = "github.com/hawklithm/termui"
-  packages = [
-    ".",
-    "widgets",
-  ]
-  pruneopts = "UT"
-  revision = "f0789e4473b0f34069998b5bcfe2542b7ed05dcb"
-
-[[projects]]
   digest = "1:0356f3312c9bd1cbeda81505b7fd437501d8e778ab66998ef69f00d7f9b3a0d7"
   name = "github.com/mattn/go-runewidth"
   packages = ["."]
@@ -52,22 +33,14 @@
   pruneopts = "UT"
   revision = "288510b9734e30e7966ec2f22b87c5f8e67345e3"
 
-[[projects]]
-  branch = "master"
-  digest = "1:519621a373ae7d96a16415a6356d7b97722ed3a292f73409b361b7c0322971e3"
-  name = "github.com/skratchdot/open-golang"
-  packages = ["open"]
-  pruneopts = "UT"
-  revision = "79abb63cd66e41cb1473e26d11ebdcd68b04c8e5"
-
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/daviddengcn/go-colortext",
-    "github.com/hawklithm/termui",
-    "github.com/hawklithm/termui/widgets",
-    "github.com/skratchdot/open-golang/open",
+    "github.com/cjbassi/drawille-go",
+    "github.com/mattn/go-runewidth",
+    "github.com/mitchellh/go-wordwrap",
+    "github.com/nsf/termbox-go",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
