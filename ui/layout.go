@@ -209,22 +209,30 @@ func (l *Layout) displayMsgIn() {
 
 		case msg = <-l.msgIn:
 
-			text := msg.String()
+			var newMsgText string
 
 			if l.masterID == msg.FromUserName {
-				l.apendOut(wechat.MessageOut{ToUserName: msg.ToUserName, Content: msg.Content, Type: msg.MsgType})
+				newMsgText = l.apendChatLogOut(wechat.MessageOut{ToUserName: msg.
+					ToUserName, Content: msg.Content, Type: msg.MsgType})
 			} else {
-				l.apendIn(msg)
+				newMsgText = l.apendChatLogIn(msg)
 			}
 
-			l.logger.Println("message receive, from=", msg.FromUserName, "to=",
-				msg.ToUserName, "content=", msg.Content)
+			l.logger.Println("message receive = ", newMsgText)
 
-			appendToPar(l.msgInBox, text)
+			appendToPar(l.msgInBox, newMsgText)
 
-			if msg.FromUserName == l.userIDList[l.userCur] {
-
-				appendToPar(l.chatBox, text)
+			var targetUserName string
+			if l.masterID == msg.FromUserName {
+				targetUserName = msg.ToUserName
+			} else {
+				targetUserName = msg.FromUserName
+			}
+			if targetUserName == l.userIDList[l.userCur] {
+				l.logger.Println("append to current chatbox", msg.FromUserName,
+					"to=",
+					msg.ToUserName, "content=", msg.Content)
+				appendToPar(l.chatBox, newMsgText)
 			}
 
 		case <-l.closeChan:
@@ -261,12 +269,12 @@ func (l *Layout) SendText(text string) {
 	msg.ToUserName = l.userIDList[l.userCur]
 	//appendToPar(l.msgInBox, fmt.Sprintf(text))
 
-	l.apendOut(msg)
+	l.apendChatLogOut(msg)
 
 	l.msgOut <- msg
 }
 
-func (l *Layout) apendOut(msg wechat.MessageOut) {
+func (l *Layout) apendChatLogOut(msg wechat.MessageOut) string {
 	if l.userChatLog[msg.ToUserName] == nil {
 		l.userChatLog[msg.ToUserName] = []*wechat.MessageRecord{}
 	}
@@ -289,10 +297,15 @@ func (l *Layout) apendOut(msg wechat.MessageOut) {
 
 	l.userChatLog[msg.ToUserName] = append(l.userChatLog[msg.ToUserName],
 		newMsg)
+
+	return newMsg.String()
 }
 
 func (l *Layout) getUserIdFromContent(content string,
 	userMap map[string]string) string {
+	if userMap == nil {
+		return content
+	}
 	s := strings.Split(content, ":")
 	if len(s) > 0 && userMap[s[0]] != "" {
 		s[0] = userMap[s[0]]
@@ -308,7 +321,7 @@ func (l *Layout) getUserIdFromContent(content string,
 	return builder.String()
 }
 
-func (l *Layout) apendIn(msg wechat.Message) {
+func (l *Layout) apendChatLogIn(msg wechat.Message) string {
 	if l.userChatLog[msg.FromUserName] == nil {
 		l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
 	}
@@ -331,6 +344,8 @@ func (l *Layout) apendIn(msg wechat.Message) {
 	l.userChatLog[msg.FromUserName] = append(l.userChatLog[msg.
 		FromUserName], newMsg)
 
+	return newMsg.String()
+
 }
 
 func AddBgColor(msg string) string {
@@ -349,7 +364,8 @@ func DelBgColor(msg string) string {
 
 func appendToPar(p *widgets.Paragraph, k string) {
 	if strings.Count(p.Text, "\n") >= 20 {
-		p.Text = ""
+		subText := strings.Split(p.Text, "\n")
+		p.Text = strings.Join(subText[len(subText)-20:], "\n")
 	}
 	p.Text += k
 	ui.Render(p)
@@ -366,7 +382,11 @@ func setPar(p *widgets.Paragraph) {
 
 func convertChatLogToText(records []*wechat.MessageRecord) string {
 	var b strings.Builder
-	for _, i := range records {
+	var start = 0
+	if len(records) > 20 {
+		start = len(records) - 20
+	}
+	for _, i := range records[start:] {
 		_, _ = fmt.Fprint(&b, i.From+"->"+i.To+": "+i.Content+"\n")
 	}
 	return b.String()

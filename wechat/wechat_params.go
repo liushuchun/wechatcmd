@@ -26,6 +26,10 @@ type MessageRecord struct {
 	Type    int
 }
 
+func (m *MessageRecord) String() string {
+	return m.From + "->" + m.To + ": " + m.Content
+}
+
 type Message struct {
 	FromUserName         string
 	PlayLength           int
