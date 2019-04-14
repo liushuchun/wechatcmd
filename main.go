@@ -132,14 +132,15 @@ func main() {
 
 	msgIn := make(chan chat.Message, maxChanSize)
 	msgOut := make(chan chat.MessageOut, maxChanSize)
+	imageIn := make(chan chat.MessageImage, maxChanSize)
 	closeChan := make(chan int, 1)
 	autoChan := make(chan int, 1)
 
-	go wechat.SyncDaemon(msgIn)
+	go wechat.SyncDaemon(msgIn, imageIn)
 
 	go wechat.MsgDaemon(msgOut, autoChan)
 	ui.NewLayout(nickNameList, userIDList, groupMemberList,
 		wechat.User.NickName,
-		wechat.User.UserName, msgIn, msgOut, closeChan, autoChan, wxLogger)
+		wechat.User.UserName, msgIn, msgOut, imageIn, closeChan, autoChan, wxLogger)
 
 }

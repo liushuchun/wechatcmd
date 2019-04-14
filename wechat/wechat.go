@@ -41,9 +41,9 @@ var (
 	LastCheckTs  = time.Now()
 	LoginUrl     = "https://login.weixin.qq.com/jslogin"
 	QrUrl        = "https://login.weixin.qq.com/qrcode/"
-	TuringUrl    = "http://www.tuling123.com/openapi/api"
-	APIKEY       = "391ad66ebad2477b908dce8e79f101e7"
-	TUringUserId = "abc123"
+	TuringUrl    = "" //"http://www.tuling123.com/openapi/api"
+	APIKEY       = "" //"391ad66ebad2477b908dce8e79f101e7"
+	TUringUserId = "" //"abc123"
 )
 
 type Wechat struct {
@@ -90,6 +90,7 @@ type Wechat struct {
 	ReplyMsgs    []string // 回复的消息列表
 	AutoReplySrc bool     //默认false,自动回复，列表。true调用AI机器人。
 	lastCheckTs  time.Time
+	SetCookie    []string
 }
 
 func NewWechat(logger *log.Logger) *Wechat {
@@ -123,6 +124,7 @@ func NewWechat(logger *log.Logger) *Wechat {
 		QrImagePath: filepath.Join(root, "qr.jpg"),
 		Log:         logger,
 		MemberMap:   make(map[string]Member),
+		SetCookie:   []string{},
 	}
 
 }
@@ -281,6 +283,7 @@ func (w *Wechat) Login() (err error) {
 		return
 	}
 	defer resp.Body.Close()
+	w.SetCookie = resp.Header["Set-Cookie"]
 	reader := resp.Body.(io.Reader)
 	if err = xml.NewDecoder(reader).Decode(w.Request); err != nil {
 		return

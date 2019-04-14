@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
 	"io"
 	"io/ioutil"
 	"math/rand"
@@ -83,6 +85,22 @@ func (w *Wechat) getWechatRoomMember(roomID, userId string) (roomName, userName 
 	return "", "", nil
 }
 
+func (w *Wechat) getImg(msgId string, preview bool) (img image.Image,
+	err error) {
+	var previewType string
+	if preview {
+		previewType = "slave"
+	}
+	apiUrl := fmt.Sprintf("%s/webwxgetmsgimg?MsgId=%s&skey=%s&type=%s",
+		w.BaseUri, msgId, w.Request.Skey, previewType)
+	if img, err := w.FetchImg(apiUrl, nil); err != nil {
+		//panic(err)
+		return nil, err
+	} else {
+		return img, nil
+	}
+}
+
 func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
 	name := "webwxsync"
 	syncResp := new(SyncResp)
@@ -117,8 +135,22 @@ func (w *Wechat) getSyncMsg() (msgs []interface{}, err error) {
 	return
 }
 
+func (w *Wechat) convertMsg(msg *Message) {
+	if msg.ToUserNickName == "" {
+		if user, ok := w.MemberMap[msg.ToUserName]; ok {
+			msg.ToUserNickName = user.NickName
+		}
+
+	}
+	if msg.FromUserNickName == "" {
+		if user, ok := w.MemberMap[msg.FromUserNickName]; ok {
+			msg.FromUserNickName = user.NickName
+		}
+	}
+}
+
 //同步守护goroutine
-func (w *Wechat) SyncDaemon(msgIn chan Message) {
+func (w *Wechat) SyncDaemon(msgIn chan Message, imageIn chan MessageImage) {
 	for {
 		w.lastCheckTs = time.Now()
 		resp, err := w.SyncCheck()
@@ -160,6 +192,9 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 					msg.Content = strings.Replace(msg.Content, "&lt;", "<", -1)
 					msg.Content = strings.Replace(msg.Content, "&gt;", ">", -1)
 					msg.Content = strings.Replace(msg.Content, " ", " ", 1)
+
+					msg.MsgId = m.(map[string]interface{})["MsgId"].(string)
+
 					switch msg.MsgType {
 					case 1:
 
@@ -175,20 +210,19 @@ func (w *Wechat) SyncDaemon(msgIn chan Message) {
 								w.SendMsg(msg.FromUserName, w.AutoReplyMsg(), false)
 							}
 						}
-						if msg.ToUserNickName == "" {
-							if user, ok := w.MemberMap[msg.ToUserName]; ok {
-								msg.ToUserNickName = user.NickName
-							}
-
-						}
-						if msg.FromUserNickName == "" {
-							if user, ok := w.MemberMap[msg.FromUserNickName]; ok {
-								msg.FromUserNickName = user.NickName
-							}
-						}
+						w.convertMsg(&msg)
 						msgIn <- msg
 					case 3:
 						//图片
+						msgId := msg.MsgId
+						//msg.Content = "图片"
+						if img, err := w.getImg(msgId, true); err != nil {
+							w.Log.Fatalln("get image error! msgId=", msgId, err)
+						} else {
+							w.convertMsg(&msg)
+							imageIn <- MessageImage{MsgId: msgId, Img: img}
+							msgIn <- msg
+						}
 					case 34:
 						//语音
 					case 47:
@@ -457,6 +491,114 @@ func (w *Wechat) Send(apiURI string, body io.Reader, call Caller) (err error) {
 		return call.Error()
 	}
 	return
+}
+
+func convertCookie(c *http.Cookie) string {
+	var builder strings.Builder
+	builder.WriteString("name=")
+	builder.WriteString(c.Name)
+	builder.WriteString(",")
+	builder.WriteString("value=")
+	builder.WriteString(c.Value)
+	builder.WriteString(",")
+
+	builder.WriteString("domain=")
+	builder.WriteString(c.Domain)
+	builder.WriteString(",")
+
+	builder.WriteString("secure=")
+	if c.Secure {
+		builder.WriteString("true")
+	} else {
+		builder.WriteString("false")
+	}
+	builder.WriteString(",")
+
+	return builder.String()
+}
+
+func (w *Wechat) addGlobalCookie(req *http.Request) {
+	for _, v := range w.SetCookie {
+		//w.Log.Println("sub cookie=", v)
+		cookie := http.Cookie{}
+		cookie.Raw = v
+		sub := strings.Split(v, ";")
+		for _, t := range sub {
+			r := strings.Split(t, "=")
+			var key, value string
+			if len(r) > 1 {
+				key = strings.Trim(r[0], " ")
+				var j strings.Builder
+				for i, z := range r[1:] {
+					if i != 0 {
+						j.WriteString("=")
+					}
+					j.WriteString(z)
+				}
+				value = j.String()
+			} else {
+				key = strings.Trim(r[0], " ")
+				value = "true"
+			}
+			//w.Log.Println("key-value=", key, value)
+
+			switch key {
+			case "Domain":
+				cookie.Domain = value
+			case "Path":
+				cookie.Path = value
+			case "Expires":
+				continue
+			case "Secure":
+				continue
+			default:
+				cookie.Name = key
+				cookie.Value = value
+			}
+		}
+		//w.Log.Println("sub cookie assemble=", convertCookie(&cookie))
+		req.AddCookie(&cookie)
+	}
+
+	var p strings.Builder
+	for _, cookie := range req.Cookies() {
+		p.WriteString(convertCookie(cookie))
+	}
+
+	w.Log.Println("cookie=", p.String())
+}
+
+func (w *Wechat) FetchImg(apiURI string, body io.Reader) (img image.Image,
+	err error) {
+	method := "GET"
+	if body != nil {
+		method = "POST"
+	}
+
+	w.Log.Println("img fetch uri=", apiURI)
+
+	req, err := http.NewRequest(method, apiURI, body)
+	if err != nil {
+		return
+	}
+
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
+	w.addGlobalCookie(req)
+
+	resp, err := w.Client.Do(req)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	w.Log.Println("response=", resp)
+
+	if img, err := jpeg.Decode(resp.Body); err != nil {
+		w.Log.Fatalf("the error:%+v", err)
+		return nil, err
+	} else {
+		return img, nil
+	}
 }
 
 func (w *Wechat) SendTest(apiURI string, body io.Reader, call Caller) (err error) {

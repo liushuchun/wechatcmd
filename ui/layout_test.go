@@ -16,6 +16,7 @@ func Test_UI(t *testing.T) {
 	//log.SetLevel(log.DebugLevel)
 	msgIn := make(chan wechat.Message, maxChanSize)
 	textOut := make(chan wechat.MessageOut, maxChanSize)
+	imageIn := make(chan wechat.MessageImage, maxChanSize)
 	initList := []string{"普罗米修斯", "啊琉球私", "盗火者", "拉风小丸子", "自强不吸"}
 	userList := initList
 
@@ -33,6 +34,7 @@ func Test_UI(t *testing.T) {
 
 	wxLogger := log.New(logFile, "[*]", log.LstdFlags)
 
-	NewLayout(initList, userList, "myName", "12235235", msgIn, textOut,
+	NewLayout(initList, userList, []wechat.Member{}, "myName", "12235235",
+		msgIn, textOut, imageIn,
 		closeChan, autoChan, wxLogger)
 }

@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"image"
 	"log"
 	"strings"
 
@@ -11,8 +12,9 @@ import (
 )
 
 const (
-	CurMark  = "(bg-red)"
-	PageSize = 45
+	SelectedMark   = "(bg:red)"
+	UnSelectedMark = "(bg:blue)"
+	PageSize       = 45
 )
 
 type Layout struct {
@@ -26,9 +28,10 @@ type Layout struct {
 	masterID        string //主人的id
 	currentMsgCount int
 	maxMsgCount     int
-	userIn          chan []string          // 用户的刷新
-	msgIn           chan wechat.Message    // 消息刷新
-	msgOut          chan wechat.MessageOut //  消息输出
+	userIn          chan []string            // 用户的刷新
+	msgIn           chan wechat.Message      // 消息刷新
+	msgOut          chan wechat.MessageOut   //  消息输出
+	imageIn         chan wechat.MessageImage //  图片消息
 	closeChan       chan int
 	autoReply       chan int
 	showUserList    []string
@@ -42,11 +45,16 @@ type Layout struct {
 	logger          *log.Logger
 	userChatLog     map[string][]*wechat.MessageRecord
 	groupMemberMap  map[string]map[string]string
+	imageMap        map[string]image.Image
+	msgIdList       []string
+	selectedMsgId   string
 }
 
 func NewLayout(userNickList []string, userIDList []string,
 	groupMemberList []wechat.Member, myName, myID string,
-	msgIn chan wechat.Message, msgOut chan wechat.MessageOut, closeChan, autoReply chan int, logger *log.Logger) {
+	msgIn chan wechat.Message, msgOut chan wechat.MessageOut,
+	imageIn chan wechat.MessageImage,
+	closeChan, autoReply chan int, logger *log.Logger) {
 
 	//	chinese := false
 	err := ui.Init()
@@ -59,6 +67,7 @@ func NewLayout(userNickList []string, userIDList []string,
 	userMap := make(map[string]string)
 	userChatLog := make(map[string][]*wechat.MessageRecord)
 	groupMemberMap := make(map[string]map[string]string)
+	imageMap := make(map[string]image.Image)
 
 	size := len(userNickList)
 
@@ -127,6 +136,7 @@ func NewLayout(userNickList []string, userIDList []string,
 		editBox:         editBox,
 		msgIn:           msgIn,
 		msgOut:          msgOut,
+		imageIn:         imageIn,
 		closeChan:       closeChan,
 		currentMsgCount: 0,
 		maxMsgCount:     18,
@@ -140,6 +150,8 @@ func NewLayout(userNickList []string, userIDList []string,
 		logger:          logger,
 		userChatLog:     userChatLog,
 		groupMemberMap:  groupMemberMap,
+		imageMap:        imageMap,
+		msgIdList:       []string{},
 	}
 
 	go l.displayMsgIn()
@@ -154,8 +166,8 @@ func NewLayout(userNickList []string, userIDList []string,
 		case "q", "<C-c>", "<C-d>":
 			return
 		case "<Enter>":
-			appendToPar(l.chatBox, l.masterName+"->"+DelBgColor(l.chatBox.
-				Title)+":"+l.editBox.Text+"\n")
+			appendToPar(l.chatBox, l.masterName+"->"+l.chatBox.
+				Title+":"+l.editBox.Text+"\n")
 			l.logger.Println(l.editBox.Text)
 			if l.editBox.Text != "" {
 				l.SendText(l.editBox.Text)
@@ -171,6 +183,10 @@ func NewLayout(userNickList []string, userIDList []string,
 			l.NextUser()
 		case "<C-p>":
 			l.PrevUser()
+		case "<C-j>":
+			l.NextSelect()
+		case "<C-k>":
+			l.PrevSelect()
 		case "<Space>":
 			appendToPar(l.editBox, " ")
 		case "<Backspace>":
@@ -192,6 +208,9 @@ func NewLayout(userNickList []string, userIDList []string,
 			} else if e.Type == ui.ResizeEvent {
 				logger.Println("resize event received, payload=", e.Payload,
 					"id=", e.ID)
+			} else if e.Type == ui.MouseEvent {
+				logger.Println("mouse event received, payload=", e.Payload,
+					"id=", e.ID)
 			}
 		}
 
@@ -201,11 +220,16 @@ func NewLayout(userNickList []string, userIDList []string,
 
 func (l *Layout) displayMsgIn() {
 	var (
-		msg wechat.Message
+		msg    wechat.Message
+		imgMsg wechat.MessageImage
 	)
 
 	for {
 		select {
+
+		case imgMsg = <-l.imageIn:
+			l.imageMap[imgMsg.MsgId] = imgMsg.Img
+			l.msgIdList = append(l.msgIdList, imgMsg.MsgId)
 
 		case msg = <-l.msgIn:
 
@@ -213,7 +237,8 @@ func (l *Layout) displayMsgIn() {
 
 			if l.masterID == msg.FromUserName {
 				newMsgText = l.apendChatLogOut(wechat.MessageOut{ToUserName: msg.
-					ToUserName, Content: msg.Content, Type: msg.MsgType})
+					ToUserName, Content: msg.Content, Type: msg.MsgType,
+					MsgId: msg.MsgId})
 			} else {
 				newMsgText = l.apendChatLogIn(msg)
 			}
@@ -246,7 +271,27 @@ func (l *Layout) displayMsgIn() {
 func (l *Layout) PrevUser() {
 	l.userNickListBox.ScrollUp()
 	l.userCur = l.userNickListBox.SelectedRow
-	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
+	l.chatBox.Title = l.userNickListBox.Rows[l.userNickListBox.SelectedRow]
+	l.logger.Println("title=", l.chatBox.Title, "content=",
+		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	ui.Render(l.userNickListBox, l.chatBox)
+}
+
+func (l *Layout) PrevSelect() {
+	l.userNickListBox.ScrollUp()
+	l.userCur = l.userNickListBox.SelectedRow
+	l.chatBox.Title = l.userNickListBox.Rows[l.userNickListBox.SelectedRow]
+	l.logger.Println("title=", l.chatBox.Title, "content=",
+		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	ui.Render(l.userNickListBox, l.chatBox)
+}
+
+func (l *Layout) NextSelect() {
+	l.userNickListBox.ScrollUp()
+	l.userCur = l.userNickListBox.SelectedRow
+	l.chatBox.Title = l.userNickListBox.Rows[l.userNickListBox.SelectedRow]
 	l.logger.Println("title=", l.chatBox.Title, "content=",
 		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
@@ -256,7 +301,7 @@ func (l *Layout) PrevUser() {
 func (l *Layout) NextUser() {
 	l.userNickListBox.ScrollDown()
 	l.userCur = l.userNickListBox.SelectedRow
-	l.chatBox.Title = DelBgColor(l.userNickListBox.Rows[l.userNickListBox.SelectedRow])
+	l.chatBox.Title = l.userNickListBox.Rows[l.userNickListBox.SelectedRow]
 	l.logger.Println("title=", l.chatBox.Title, "content=",
 		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	l.chatBox.Text = convertChatLogToText(l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
@@ -283,8 +328,13 @@ func (l *Layout) apendChatLogOut(msg wechat.MessageOut) string {
 		msg)
 
 	if l.groupMemberMap[newMsg.From] != nil {
-		newMsg.Content = l.getUserIdFromContent(newMsg.Content,
-			l.groupMemberMap[newMsg.From])
+		if newMsg.Type == 3 {
+			newMsg.Content = l.getUserIdAndConvertImgContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		} else {
+			newMsg.Content = l.getUserIdFromContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		}
 	}
 
 	if l.userMap[newMsg.To] != "" {
@@ -321,6 +371,19 @@ func (l *Layout) getUserIdFromContent(content string,
 	return builder.String()
 }
 
+func (l *Layout) getUserIdAndConvertImgContent(content string,
+	userMap map[string]string) string {
+	if userMap == nil {
+		return content
+	}
+	s := strings.Split(content, ":")
+	if len(s) > 0 && userMap[s[0]] != "" {
+		s[0] = userMap[s[0]]
+	}
+	l.logger.Println("groupMap=", userMap, "s=", s)
+	return s[0] + ":" + AddUnSelectedBg("图片")
+}
+
 func (l *Layout) apendChatLogIn(msg wechat.Message) string {
 	if l.userChatLog[msg.FromUserName] == nil {
 		l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
@@ -329,8 +392,13 @@ func (l *Layout) apendChatLogIn(msg wechat.Message) string {
 	newMsg := wechat.NewMessageRecordIn(msg)
 
 	if l.groupMemberMap[newMsg.From] != nil {
-		newMsg.Content = l.getUserIdFromContent(newMsg.Content,
-			l.groupMemberMap[newMsg.From])
+		if newMsg.Type == 3 {
+			newMsg.Content = l.getUserIdAndConvertImgContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		} else {
+			newMsg.Content = l.getUserIdFromContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		}
 	}
 
 	if l.userMap[newMsg.To] != "" {
@@ -348,11 +416,18 @@ func (l *Layout) apendChatLogIn(msg wechat.Message) string {
 
 }
 
-func AddBgColor(msg string) string {
+func AddSelectedBg(msg string) string {
+	return AddBgColor(DelBgColor(msg), SelectedMark)
+}
+
+func AddUnSelectedBg(msg string) string {
+	return AddBgColor(DelBgColor(msg), UnSelectedMark)
+}
+func AddBgColor(msg string, color string) string {
 	if strings.HasPrefix(msg, "[") {
 		return msg
 	}
-	return "[" + msg + "]" + CurMark
+	return "[" + msg + "]" + color
 }
 func DelBgColor(msg string) string {
 
