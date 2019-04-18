@@ -220,7 +220,14 @@ func (w *Wechat) SyncDaemon(msgIn chan Message, imageIn chan MessageImage) {
 							w.Log.Fatalln("get image error! msgId=", msgId, err)
 						} else {
 							w.convertMsg(&msg)
-							imageIn <- MessageImage{MsgId: msgId, Img: img}
+							var targetId string
+							if w.User.UserName == msg.FromUserName {
+								targetId = msg.ToUserName
+							} else {
+								targetId = msg.FromUserName
+							}
+							imageIn <- MessageImage{MsgId: msgId, Img: img,
+								TargetId: targetId}
 							msgIn <- msg
 						}
 					case 34:

@@ -22,8 +22,9 @@ type MessageOut struct {
 }
 
 type MessageImage struct {
-	Img   image.Image
-	MsgId string
+	Img      image.Image
+	MsgId    string
+	TargetId string
 }
 
 type MessageRecord struct {

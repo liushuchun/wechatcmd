@@ -1,3 +1,13 @@
+
+
+基于termui添加了一些新的控件
+
+新增控件
+- [ImageList](./_examples/image_list.go) 支持选择的图文展示控件
+
+以下为原版README
+
+------------------
 # termui
 
 [<img src="./_assets/demo.gif" alt="demo cast under osx 10.10; Terminal.app; Menlo Regular 12pt.)" width="100%">](./_examples/demo.go)
