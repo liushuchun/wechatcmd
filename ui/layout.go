@@ -313,7 +313,11 @@ func setRows(p *widgets.ImageList, records []*wechat.MessageRecord) {
 	var rows []*widgets.ImageListItem
 	for _, i := range records {
 		item := widgets.NewImageListItem()
-		item.Text = i.From + "->" + i.To + ": " + i.Content
+		if i.ContentImg != nil {
+			item.Img = i.ContentImg
+		} else {
+			item.Text = i.From + "->" + i.To + ": " + i.Content
+		}
 		rows = append(rows, item)
 	}
 	p.Rows = rows
