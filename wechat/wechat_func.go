@@ -226,9 +226,9 @@ func (w *Wechat) SyncDaemon(msgIn chan Message, imageIn chan MessageImage) {
 							} else {
 								targetId = msg.FromUserName
 							}
-							imageIn <- MessageImage{MsgId: msgId, Img: img,
+							imageIn <- MessageImage{Message: msg, Img: img,
 								TargetId: targetId}
-							msgIn <- msg
+							//msgIn <- msg
 						}
 					case 34:
 						//语音

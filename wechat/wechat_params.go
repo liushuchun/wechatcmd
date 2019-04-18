@@ -22,16 +22,18 @@ type MessageOut struct {
 }
 
 type MessageImage struct {
-	Img      image.Image
-	MsgId    string
+	Img image.Image
+	//MsgId    string
 	TargetId string
+	Message
 }
 
 type MessageRecord struct {
-	From    string
-	To      string
-	Content string
-	Type    int
+	From       string
+	To         string
+	Content    string
+	ContentImg image.Image
+	Type       int
 }
 
 func (m *MessageRecord) String() string {
@@ -330,5 +332,15 @@ func NewMessageRecordIn(message Message) *MessageRecord {
 		To:      message.ToUserName,
 		Content: message.Content,
 		Type:    message.MsgType,
+	}
+}
+
+func NewImageMessageRecordIn(message MessageImage) *MessageRecord {
+	return &MessageRecord{
+		From:       message.FromUserName,
+		To:         message.ToUserName,
+		Content:    message.Content,
+		Type:       message.MsgType,
+		ContentImg: message.Img,
 	}
 }

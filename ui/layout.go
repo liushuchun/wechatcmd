@@ -228,11 +228,38 @@ func (l *Layout) displayMsgIn() {
 		select {
 
 		case imgMsg = <-l.imageIn:
-			l.imageMap[imgMsg.MsgId] = imgMsg.Img
-			if l.msgIdList[imgMsg.TargetId] == nil {
-				l.msgIdList[imgMsg.TargetId] = []string{}
+			//l.imageMap[imgMsg.MsgId] = imgMsg.Img
+			//if l.msgIdList[imgMsg.TargetId] == nil {
+			//	l.msgIdList[imgMsg.TargetId] = []string{}
+			//}
+			//l.msgIdList[imgMsg.TargetId] = append(l.msgIdList[imgMsg.TargetId], imgMsg.MsgId)
+
+			var newMsgText string
+
+			if l.masterID == imgMsg.FromUserName {
+				newMsgText = l.apendChatLogOut(wechat.MessageOut{ToUserName: imgMsg.
+					ToUserName, Content: imgMsg.Content, Type: imgMsg.MsgType,
+					MsgId: imgMsg.MsgId})
+			} else {
+				newMsgText = l.apendImageChatLogIn(imgMsg)
 			}
-			l.msgIdList[imgMsg.TargetId] = append(l.msgIdList[imgMsg.TargetId], imgMsg.MsgId)
+
+			l.logger.Println("message receive = ", newMsgText)
+
+			appendToPar(l.msgInBox, newMsgText)
+
+			var targetUserName string
+			if l.masterID == imgMsg.FromUserName {
+				targetUserName = imgMsg.ToUserName
+			} else {
+				targetUserName = imgMsg.FromUserName
+			}
+			if targetUserName == l.userIDList[l.userCur] {
+				l.logger.Println("append to current chatbox", imgMsg.FromUserName,
+					"to=",
+					imgMsg.ToUserName, "content=", imgMsg.Content)
+				appendImageToList(l.chatBox, imgMsg.Img)
+			}
 
 		case msg = <-l.msgIn:
 
@@ -278,43 +305,32 @@ func (l *Layout) PrevUser() {
 	l.logger.Println("title=", l.chatBox.Title, "content=",
 		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	setRows(l.chatBox, l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.logger.Println("prev user", "rows=", len(l.chatBox.Rows))
 	ui.Render(l.userNickListBox, l.chatBox)
 }
 
 func setRows(p *widgets.ImageList, records []*wechat.MessageRecord) {
-	rows := []*widgets.ImageListItem{}
+	var rows []*widgets.ImageListItem
 	for _, i := range records {
 		item := widgets.NewImageListItem()
 		item.Text = i.From + "->" + i.To + ": " + i.Content
 		rows = append(rows, item)
 	}
 	p.Rows = rows
+	p.SelectedRow = len(p.Rows) - 1
+	if p.SelectedRow < 0 {
+		p.SelectedRow = 0
+	}
 }
 
 func (l *Layout) PrevSelect() {
-	userId := l.userIDList[l.userNickListBox.SelectedRow]
-	idList := l.msgIdList[userId]
-	for i, id := range idList {
-		if id == l.selectedMsgId {
-			if i-1 >= 0 {
-				l.selectedMsgId = idList[i-1]
-			}
-			break
-		}
-	}
+	l.chatBox.ScrollUp()
+	ui.Render(l.chatBox)
 }
 
 func (l *Layout) NextSelect() {
-	userId := l.userIDList[l.userNickListBox.SelectedRow]
-	idList := l.msgIdList[userId]
-	for i, id := range idList {
-		if id == l.selectedMsgId {
-			if len(idList) > i+1 {
-				l.selectedMsgId = idList[i+1]
-			}
-			break
-		}
-	}
+	l.chatBox.ScrollDown()
+	ui.Render(l.chatBox)
 }
 
 func (l *Layout) NextUser() {
@@ -324,6 +340,8 @@ func (l *Layout) NextUser() {
 	l.logger.Println("title=", l.chatBox.Title, "content=",
 		l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
 	setRows(l.chatBox, l.userChatLog[l.userIDList[l.userNickListBox.SelectedRow]])
+	l.logger.Println("next user", "rows=", len(l.chatBox.Rows), "top row=",
+		l.chatBox.TopLine())
 	ui.Render(l.userNickListBox, l.chatBox)
 }
 
@@ -444,6 +462,42 @@ func (l *Layout) apendChatLogIn(msg wechat.Message) string {
 
 }
 
+func (l *Layout) apendImageChatLogIn(msg wechat.MessageImage) string {
+	if l.userChatLog[msg.FromUserName] == nil {
+		l.userChatLog[msg.FromUserName] = []*wechat.MessageRecord{}
+	}
+
+	newMsg := wechat.NewImageMessageRecordIn(msg)
+
+	if l.groupMemberMap[newMsg.From] != nil {
+		if newMsg.Type == 3 {
+			newMsg.Content = l.getUserIdAndConvertImgContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		} else {
+			newMsg.Content = l.getUserIdFromContent(newMsg.Content,
+				l.groupMemberMap[newMsg.From])
+		}
+	} else {
+		if newMsg.Type == 3 {
+			newMsg.Content = "图片"
+		}
+	}
+
+	if l.userMap[newMsg.To] != "" {
+		newMsg.To = l.userMap[newMsg.To]
+	}
+
+	if l.userMap[newMsg.From] != "" {
+		newMsg.From = l.userMap[newMsg.From]
+	}
+
+	l.userChatLog[msg.FromUserName] = append(l.userChatLog[msg.
+		FromUserName], newMsg)
+
+	return newMsg.String()
+
+}
+
 func AddSelectedBg(msg string) string {
 	return AddBgColor(DelBgColor(msg), SelectedMark)
 }
@@ -477,6 +531,13 @@ func appendToPar(p *widgets.Paragraph, k string) {
 func appendToList(p *widgets.ImageList, k string) {
 	item := widgets.NewImageListItem()
 	item.Text = k
+	p.Rows = append(p.Rows, item)
+	ui.Render(p)
+}
+
+func appendImageToList(p *widgets.ImageList, k image.Image) {
+	item := widgets.NewImageListItem()
+	item.Img = k
 	p.Rows = append(p.Rows, item)
 	ui.Render(p)
 }
