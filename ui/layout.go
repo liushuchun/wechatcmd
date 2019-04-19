@@ -2,9 +2,14 @@ package ui
 
 import (
 	"fmt"
+	"github.com/skratchdot/open-golang/open"
 	"image"
+	"image/png"
 	"log"
+	"os"
+	"strconv"
 	"strings"
+	"time"
 
 	ui "github.com/hawklithm/termui"
 	"github.com/hawklithm/termui/widgets"
@@ -173,8 +178,8 @@ func NewLayout(userNickList []string, userIDList []string,
 				l.SendText(l.editBox.Text)
 			}
 			resetPar(l.editBox)
-		case "<C-1>":
-			l.autoReply <- 1 //开启自动回复
+		case "<C-w>":
+			l.showDetail()
 		case "<C-2>":
 			l.autoReply <- 0 //关闭自动回复
 		case "<C-3>":
@@ -330,6 +335,33 @@ func setRows(p *widgets.ImageList, records []*wechat.MessageRecord) {
 func (l *Layout) PrevSelect() {
 	l.chatBox.ScrollUp()
 	ui.Render(l.chatBox)
+}
+
+func (l *Layout) showDetail() {
+	item := l.chatBox.Rows[l.chatBox.SelectedRow]
+	if item.Img == nil {
+		return
+	}
+	//root, e := os.Getwd()
+	//if e != nil {
+	root := "/tmp"
+	//}
+	key := time.Now().UTC().UnixNano()
+	builder := strings.Builder{}
+	builder.WriteString(root)
+	builder.WriteRune(os.PathSeparator)
+	builder.WriteString(strconv.FormatInt(key, 10))
+	builder.WriteString(".png")
+	out, err := os.Create(builder.String())
+	if err != nil {
+		l.logger.Fatalln("open file failed! path=", builder.String(), err)
+	}
+	if err := png.Encode(out, item.Img); err != nil {
+		l.logger.Fatalln("encode image failed! path=", builder.String(), err)
+	} else {
+		_ = open.Start(builder.String())
+	}
+
 }
 
 func (l *Layout) NextSelect() {
