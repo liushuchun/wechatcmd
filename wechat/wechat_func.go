@@ -91,8 +91,11 @@ func (w *Wechat) getImg(msgId string, preview bool) (img image.Image,
 	if preview {
 		previewType = "slave"
 	}
-	apiUrl := fmt.Sprintf("%s/webwxgetmsgimg?MsgId=%s&skey=%s&type=%s",
-		w.BaseUri, msgId, w.Request.Skey, previewType)
+	apiUrl := fmt.Sprintf("%s/webwxgetmsgimg?MsgId=%s&skey=%s",
+		w.BaseUri, msgId, w.Request.Skey)
+	if preview {
+		apiUrl += "&type=" + previewType
+	}
 	if img, err := w.FetchImg(apiUrl, nil); err != nil {
 		//panic(err)
 		return nil, err
@@ -216,7 +219,7 @@ func (w *Wechat) SyncDaemon(msgIn chan Message, imageIn chan MessageImage) {
 						//图片
 						msgId := msg.MsgId
 						//msg.Content = "图片"
-						if img, err := w.getImg(msgId, true); err != nil {
+						if img, err := w.getImg(msgId, false); err != nil {
 							w.Log.Fatalln("get image error! msgId=", msgId, err)
 						} else {
 							w.convertMsg(&msg)
