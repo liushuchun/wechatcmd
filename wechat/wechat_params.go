@@ -37,7 +37,7 @@ type MessageRecord struct {
 }
 
 func (m *MessageRecord) String() string {
-	return m.From + "->" + m.To + ": " + m.Content + "\n"
+	return m.From + "->" + m.To + ": " + m.Content
 }
 
 type Message struct {

@@ -97,7 +97,7 @@ func (w *Wechat) getImg(msgId string, preview bool) (img image.Image,
 		apiUrl += "&type=" + previewType
 	}
 	if img, err := w.FetchImg(apiUrl, nil); err != nil {
-		//panic(err)
+		w.Log.Fatalln("fetch image error! url=", apiUrl)
 		return nil, err
 	} else {
 		return img, nil

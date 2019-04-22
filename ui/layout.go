@@ -251,7 +251,7 @@ func (l *Layout) displayMsgIn() {
 
 			l.logger.Println("message receive = ", newMsgText)
 
-			appendToPar(l.msgInBox, newMsgText)
+			appendToPar(l.msgInBox, newMsgText+"\n")
 
 			var targetUserName string
 			if l.masterID == imgMsg.FromUserName {
@@ -269,6 +269,7 @@ func (l *Layout) displayMsgIn() {
 		case msg = <-l.msgIn:
 
 			var newMsgText string
+			msg.Content = TranslateEmoji(ConvertToEmoji(msg.Content))
 
 			if l.masterID == msg.FromUserName {
 				newMsgText = l.apendChatLogOut(wechat.MessageOut{ToUserName: msg.
@@ -280,7 +281,7 @@ func (l *Layout) displayMsgIn() {
 
 			l.logger.Println("message receive = ", newMsgText)
 
-			appendToPar(l.msgInBox, newMsgText)
+			appendToPar(l.msgInBox, newMsgText+"\n")
 
 			var targetUserName string
 			if l.masterID == msg.FromUserName {
